@@ -120,8 +120,24 @@ export default function MemberHome({ member, user, timeTracking, balanceLogs }: 
 
     const status = getStatus();
 
-    // Build simple alert list for notifications section (balance-related only)
+    // Build simple alert list for notifications section (balance + subscription)
     const alerts: { id: string; type: 'warning' | 'danger' | 'info'; message: string }[] = [];
+
+    // Monthly plan: show notification 1 week before expiry
+    const nowForExpiry = new Date();
+    const endForExpiry = new Date(member.endDate);
+    const diffTimeExpiry = endForExpiry.getTime() - nowForExpiry.getTime();
+    const daysUntilExpiry = Math.ceil(diffTimeExpiry / (1000 * 60 * 60 * 24));
+
+    const expiryPlans = ['Monthly', 'Quarterly', 'Annual'];
+
+    if (!member.inactive && expiryPlans.includes(member.plan as any) && daysUntilExpiry >= 0 && daysUntilExpiry <= 7) {
+        alerts.push({
+            id: 'expiry',
+            type: 'warning',
+            message: `Your ${member.plan.toLowerCase()} membership will expire in ${daysUntilExpiry} day(s). Please renew soon to avoid interruption of access.`,
+        });
+    }
 
     // Try to get the most recent balance log as the reason/description
     const latestBalanceLog = balanceLogs.length > 0 ? balanceLogs[0] : null;

@@ -1,5 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface LoginProps {
     status?: string;
@@ -7,6 +8,7 @@ interface LoginProps {
 }
 
 export default function Login({ status, canResetPassword }: LoginProps) {
+    const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -66,17 +68,27 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                 <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
                                     Password
                                 </label>
-                                <input
-                                    id="password"
-                                    type="password"
-                                    name="password"
-                                    value={data.password}
-                                    onChange={(e) => setData('password', e.target.value)}
-                                    required
-                                    autoComplete="current-password"
-                                    placeholder="••••••••"
-                                    className="w-full p-3 bg-slate-950 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                                />
+                                <div className="relative">
+                                    <input
+                                        id="password"
+                                        type={showPassword ? "text" : "password"}
+                                        name="password"
+                                        value={data.password}
+                                        onChange={(e) => setData('password', e.target.value)}
+                                        required
+                                        autoComplete="current-password"
+                                        placeholder="••••••••"
+                                        className="w-full p-3 pr-10 bg-slate-950 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white focus:outline-none"
+                                        aria-label={showPassword ? "Hide password" : "Show password"}
+                                    >
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </div>
                                 {errors.password && (
                                     <p className="mt-1 text-sm text-red-400">{errors.password}</p>
                                 )}

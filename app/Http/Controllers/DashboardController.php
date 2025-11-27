@@ -422,12 +422,21 @@ class DashboardController extends Controller
      */
     public function userBalanceLogs(User $user)
     {
-        $logs = $user->balanceLogs()
-            ->where('amount', '>', 0)
-            // Only show entries that are part of the current outstanding balance range
-            // balance_after > 0 and not greater than the member's current balance
-            ->where('balance_after', '>', 0)
-            ->where('balance_after', '<=', $user->balance)
+        // Find the most recent payment that marked previous items as paid
+        $lastPaymentId = $user->balanceLogs()
+            ->where('type', 'mark_paid')
+            ->max('id');
+
+        $query = $user->balanceLogs()
+            ->where('amount', '>', 0);
+
+        // If there has been at least one payment, only show purchases after that payment.
+        // This prevents older, already-paid purchases from reappearing when new charges are added.
+        if ($lastPaymentId) {
+            $query->where('id', '>', $lastPaymentId);
+        }
+
+        $logs = $query
             ->orderByDesc('created_at')
             ->limit(50)
             ->get([

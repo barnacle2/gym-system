@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { Member } from './member-form';
 
 type MemberStatus = {
@@ -18,9 +18,10 @@ type Props = {
   sendPasswordReset: (id: string) => void;
   formatDate: (s: string) => string;
   deleteMember: (id: string) => void;
+  memberRowRefs: React.RefObject<Record<string, HTMLTableRowElement | null>>;
 };
 
-export default function MembersTable({ members, filteredMembers, computeStatus, editMember, renewMember, toggleMemberStatus, sendPasswordReset, formatDate, deleteMember }: Props) {
+export default function MembersTable({ members, filteredMembers, computeStatus, editMember, renewMember, toggleMemberStatus, sendPasswordReset, formatDate, deleteMember, memberRowRefs }: Props) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const displayedMembers = useMemo(() => {
@@ -31,6 +32,21 @@ export default function MembersTable({ members, filteredMembers, computeStatus, 
       m.email?.toLowerCase().includes(lower)
     );
   }, [filteredMembers, searchTerm]);
+
+  // Initialize refs for member rows
+  useEffect(() => {
+    // Initialize the refs object if it doesn't exist
+    if (memberRowRefs.current === null) {
+      memberRowRefs.current = {};
+    }
+    
+    // Ensure all displayed members have a ref
+    displayedMembers.forEach(member => {
+      if (!memberRowRefs.current[member.id]) {
+        memberRowRefs.current[member.id] = null;
+      }
+    });
+  }, [displayedMembers, memberRowRefs]);
 
   return (
     <div className="p-4">
@@ -71,7 +87,15 @@ export default function MembersTable({ members, filteredMembers, computeStatus, 
             displayedMembers.map(member => {
               const status = computeStatus(member);
               return (
-                <tr key={member.id} className="bg-slate-950/80 border border-gray-700">
+                <tr 
+                  key={member.id} 
+                  ref={el => {
+                    if (memberRowRefs.current) {
+                      memberRowRefs.current[member.id] = el;
+                    }
+                  }}
+                  className="bg-slate-950/80 border border-gray-700"
+                >
                   <td className="p-3 border-l border-gray-700 rounded-l-xl align-top">
                     <div className="space-y-1">
                       <div className="text-sm font-semibold text-gray-100 truncate max-w-[220px]">
@@ -116,13 +140,15 @@ export default function MembersTable({ members, filteredMembers, computeStatus, 
                   <td className="p-3 text-sm">
                     {member.plan === 'Daily' ? 'Present (Daily)' : formatDate(member.endDate)}
                   </td>
-                  <td className="p-3">
-                    <span className={`px-3 py-1 rounded-full text-xs border ${
+                  <td className="p-3 whitespace-nowrap min-w-[120px]">
+                    <span className={`inline-block px-3 py-1 rounded-full text-xs border whitespace-nowrap ${
                       status.className === 'active' ? 'bg-green-500/10 text-green-300 border-green-500/35' :
                       status.className === 'expiring' ? 'bg-amber-500/10 text-amber-300 border-amber-500/35' :
                       status.className === 'expired' ? 'bg-red-500/10 text-red-300 border-red-500/35' :
                       'bg-gray-500/10 text-gray-300 border-gray-500/35'
-                    }`}>{status.label}</span>
+                    }`}>
+                      {status.label}
+                    </span>
                   </td>
                   <td className="p-3 text-sm">{member.notes}</td>
                   <td className="p-3 border-r border-gray-700 rounded-r-xl">

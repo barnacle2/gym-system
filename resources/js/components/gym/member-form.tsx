@@ -139,9 +139,36 @@ export default function MemberForm({ formData, setFormData, isEditing, resetForm
                 value={formData.plan}
                 onChange={(e) => {
                   const plan = e.target.value as FormData['plan'];
-                  setFormData(prev => ({ ...prev, plan, endDate: prev.startDate ? prev.endDate : prev.endDate }));
+                  setFormData(prev => {
+                    // Calculate new end date based on the selected plan and current start date
+                    const startDate = prev.startDate ? new Date(prev.startDate) : new Date();
+                    const monthsMap = {
+                      'Daily': 0,
+                      'Monthly': 1,
+                      'Quarterly': 3,
+                      'Semi-Annual': 6,
+                      'Annual': 12
+                    };
+                    
+                    const months = monthsMap[plan] || 1;
+                    let newEndDate = new Date(startDate);
+                    
+                    if (months > 0) {
+                      const day = startDate.getDate();
+                      newEndDate.setMonth(startDate.getMonth() + months);
+                      if (newEndDate.getDate() < day) {
+                        newEndDate.setDate(0); // Set to last day of previous month
+                      }
+                    }
+                    
+                    return {
+                      ...prev,
+                      plan,
+                      endDate: months > 0 ? newEndDate.toISOString().split('T')[0] : prev.endDate
+                    };
+                  });
                 }}
-                className="w-full p-3 bg-slate-950 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:border-blue-500"
+                className="w-full p-3 bg-slate-950 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:border-blue-500 [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-100"
               >
                 <option value="Daily">Daily</option>
                 <option value="Monthly">Monthly</option>
@@ -155,9 +182,47 @@ export default function MemberForm({ formData, setFormData, isEditing, resetForm
               <input
                 type="date"
                 value={formData.startDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
+                onChange={(e) => {
+                  const newStartDate = e.target.value;
+                  setFormData(prev => {
+                    // If end date is not set or is the same as the old start date, update it
+                    if (!prev.endDate || prev.endDate === prev.startDate) {
+                      const startDate = new Date(newStartDate);
+                      const plan = prev.plan;
+                      const monthsMap = {
+                        'Daily': 0,
+                        'Monthly': 1,
+                        'Quarterly': 3,
+                        'Semi-Annual': 6,
+                        'Annual': 12
+                      };
+                      
+                      const months = monthsMap[plan] || 1;
+                      let newEndDate = new Date(startDate);
+                      
+                      if (months > 0) {
+                        const day = startDate.getDate();
+                        newEndDate.setMonth(startDate.getMonth() + months);
+                        if (newEndDate.getDate() < day) {
+                          newEndDate.setDate(0); // Set to last day of previous month
+                        }
+                      }
+                      
+                      return {
+                        ...prev,
+                        startDate: newStartDate,
+                        endDate: months > 0 ? newEndDate.toISOString().split('T')[0] : prev.endDate
+                      };
+                    }
+                    
+                    return {
+                      ...prev,
+                      startDate: newStartDate
+                    };
+                  });
+                }}
                 required
-                className="w-full p-3 bg-slate-950 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:border-blue-500"
+                className="w-full p-3 bg-slate-950 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:border-blue-500 [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-100"
               />
             </div>
           </div>
@@ -169,7 +234,7 @@ export default function MemberForm({ formData, setFormData, isEditing, resetForm
                 type="date"
                 value={formData.endDate}
                 onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
-                className="w-full p-3 bg-slate-950 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:border-blue-500"
+                className="w-full p-3 bg-slate-950 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:border-blue-500 [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-100"
               />
             </div>
             <div>

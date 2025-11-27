@@ -21,6 +21,7 @@ interface PaginatorMeta {
 interface SessionItem {
     id: number;
     user: { id: number; name: string; email: string };
+    plan?: string | null;
     time_in: string | null;
     time_out: string | null;
     duration: string;
@@ -154,13 +155,10 @@ export default function AdminTimeLogs({ sessions, filters, users }: Props) {
             <div className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 text-gray-200">
                 <header className="sticky top-0 z-10 border-b border-gray-700 bg-slate-900/80 p-4 backdrop-blur-sm">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <a href="/dashboard" className="cursor-pointer flex items-center gap-2 text-gray-300 hover:text-white transition-colors">
-                                <ArrowLeft className="h-4 w-4" />
-                                Back to Dashboard
-                            </a>
-                            <h1 className="text-xl font-bold tracking-wide">⏱️ Time Logs</h1>
-                        </div>
+                        <h1 className="text-xl font-bold tracking-wide">⏱️ Time Logs</h1>
+                        <a href="/dashboard" className="cursor-pointer rounded-lg bg-gray-800 px-3 py-1 text-xs text-gray-200 hover:bg-gray-700">
+                            ← Back to Dashboard
+                        </a>
                     </div>
                 </header>
 
@@ -169,11 +167,25 @@ export default function AdminTimeLogs({ sessions, filters, users }: Props) {
                         <form onSubmit={applyFilters} className="p-4 grid gap-4 md:grid-cols-5">
                             <div>
                                 <label className="block text-xs text-gray-400 mb-1">From</label>
-                                <input type="date" value={local.date_from} onChange={(e) => setLocal((s) => ({ ...s, date_from: e.target.value }))} className="w-full px-3 py-2 bg-slate-900/50 border border-gray-700 rounded-lg" />
+                                <div className="relative">
+                                    <input 
+                                        type="date" 
+                                        value={local.date_from} 
+                                        onChange={(e) => setLocal((s) => ({ ...s, date_from: e.target.value }))} 
+                                        className="w-full px-3 py-2 bg-slate-900/50 border border-gray-700 rounded-lg [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-100"
+                                    />
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-xs text-gray-400 mb-1">To</label>
-                                <input type="date" value={local.date_to} onChange={(e) => setLocal((s) => ({ ...s, date_to: e.target.value }))} className="w-full px-3 py-2 bg-slate-900/50 border border-gray-700 rounded-lg" />
+                                <div className="relative">
+                                    <input 
+                                        type="date" 
+                                        value={local.date_to} 
+                                        onChange={(e) => setLocal((s) => ({ ...s, date_to: e.target.value }))} 
+                                        className="w-full px-3 py-2 bg-slate-900/50 border border-gray-700 rounded-lg [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-100"
+                                    />
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-xs text-gray-400 mb-1">Member</label>
@@ -240,7 +252,9 @@ export default function AdminTimeLogs({ sessions, filters, users }: Props) {
                                             <td className="px-3 py-2 whitespace-nowrap">{s.time_in ?? '-'}</td>
                                             <td className="px-3 py-2 whitespace-nowrap">{s.time_out ?? '-'}</td>
                                             <td className="px-3 py-2">{s.duration}</td>
-                                            <td className="px-3 py-2">{Number(s.credits_used).toFixed(2)}</td>
+                                            <td className="px-3 py-2">
+                                                {s.plan === 'Daily' ? Number(s.credits_used).toFixed(2) : '-'}
+                                            </td>
                                             <td className="px-3 py-2">
                                                 {s.is_active ? (
                                                     <div className="flex items-center gap-2">

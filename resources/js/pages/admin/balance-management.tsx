@@ -47,6 +47,8 @@ export default function BalanceManagement({ users, openUserId }: Props) {
     const [transactions, setTransactions] = useState<BalanceLogOption[]>([]);
     const [selectedTransactionIds, setSelectedTransactionIds] = useState<number[]>([]);
     const [transactionsLoading, setTransactionsLoading] = useState(false);
+    const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
+    const [lastPaidUserName, setLastPaidUserName] = useState('');
 
     const { data, setData, processing, errors, reset } = useForm({
         description: '',
@@ -133,6 +135,8 @@ export default function BalanceManagement({ users, openUserId }: Props) {
             return;
         }
 
+        const paidUserName = selectedUser.name;
+
         router.post(`/admin/users/${selectedUser.id}/balance`, {
             balance: totalSelected,
             action: 'subtract',
@@ -145,6 +149,8 @@ export default function BalanceManagement({ users, openUserId }: Props) {
                 setSelectedUser(null);
                 setTransactions([]);
                 setSelectedTransactionIds([]);
+                setLastPaidUserName(paidUserName);
+                setShowPaymentSuccess(true);
             },
         });
     };
@@ -164,22 +170,13 @@ export default function BalanceManagement({ users, openUserId }: Props) {
                 {/* Header */}
                 <header className="sticky top-0 z-10 border-b border-gray-700 bg-slate-900/80 p-4 backdrop-blur-sm">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <a
-                                href="/dashboard"
-                                className="cursor-pointer flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
-                            >
-                                <ArrowLeft className="h-4 w-4" />
-                                Back to Dashboard
-                            </a>
-                            <h1 className="text-xl font-bold tracking-wide">💰 Balance Management</h1>
-                        </div>
-                        <button
-                            onClick={handleLogout}
-                            className="cursor-pointer px-4 py-2 bg-gray-700 text-gray-200 rounded-lg hover:bg-gray-600 text-sm"
+                        <h1 className="text-xl font-bold tracking-wide">💰 Balance Management</h1>
+                        <a
+                            href="/dashboard"
+                            className="cursor-pointer rounded-lg bg-gray-800 px-3 py-1 text-xs text-gray-200 hover:bg-gray-700"
                         >
-                            Logout
-                        </button>
+                            ← Back to Dashboard
+                        </a>
                     </div>
                 </header>
 
@@ -513,6 +510,39 @@ export default function BalanceManagement({ users, openUserId }: Props) {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {showPaymentSuccess && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                    <div className="relative w-full max-w-md rounded-2xl border border-emerald-500/30 bg-slate-950/95 p-6 shadow-2xl">
+                        <div className="absolute inset-x-10 -top-6 flex justify-center">
+                            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/90 text-slate-950 shadow-lg">
+                                <span className="text-2xl">✓</span>
+                            </div>
+                        </div>
+                        <div className="mt-4 text-center space-y-2">
+                            <h2 className="text-lg font-semibold text-gray-100">Payment recorded successfully</h2>
+                            <p className="text-sm text-gray-400">
+                                {lastPaidUserName ? (
+                                    <>
+                                        Payment for <span className="font-medium text-gray-200">{lastPaidUserName}</span> has been recorded and their balance updated.
+                                    </>
+                                ) : (
+                                    <>The payment has been recorded and the member's balance has been updated.</>
+                                )}
+                            </p>
+                        </div>
+                        <div className="mt-5 flex items-center justify-center gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setShowPaymentSuccess(false)}
+                                className="cursor-pointer px-4 py-2 rounded-lg bg-emerald-600 text-sm font-medium text-white hover:bg-emerald-500"
+                            >
+                                Got it
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

@@ -242,7 +242,7 @@ class TimeTrackingController extends Controller
 
         $perPage = $filters['per_page'] ?? 20;
 
-        $query = TimeSession::with(['user:id,name,email'])
+        $query = TimeSession::with(['user:id,name,email', 'user.member'])
             ->when(!empty($filters['user_id']), function ($q) use ($filters) {
                 $q->where('user_id', $filters['user_id']);
             })
@@ -265,6 +265,7 @@ class TimeTrackingController extends Controller
                     'name' => $s->user->name,
                     'email' => $s->user->email,
                 ],
+                'plan' => optional($s->user->member)->plan?->value,
                 'time_in' => $s->time_in?->toDateTimeString(),
                 'time_out' => $s->time_out?->toDateTimeString(),
                 'duration' => $s->getFormattedDuration(),

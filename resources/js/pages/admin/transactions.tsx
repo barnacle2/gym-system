@@ -54,25 +54,16 @@ export default function AdminTransactions({ users }: Props) {
             <div className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 text-gray-200">
                 <header className="sticky top-0 z-10 border-b border-gray-700 bg-slate-900/80 p-4 backdrop-blur-sm">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <a
-                                href="/dashboard"
-                                className="cursor-pointer flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
-                            >
-                                <ArrowLeft className="h-4 w-4" />
-                                Back to Dashboard
-                            </a>
-                            <h1 className="text-xl font-bold tracking-wide flex items-center gap-2">
-                                <ShoppingBag className="h-5 w-5 text-emerald-400" />
-                                Member Transactions
-                            </h1>
-                        </div>
-                        <button
-                            onClick={handleLogout}
-                            className="cursor-pointer px-4 py-2 bg-gray-700 text-gray-200 rounded-lg hover:bg-gray-600 text-sm"
+                        <h1 className="text-xl font-bold tracking-wide flex items-center gap-2">
+                            <ShoppingBag className="h-5 w-5 text-emerald-400" />
+                            Member Transactions
+                        </h1>
+                        <a
+                            href="/dashboard"
+                            className="cursor-pointer rounded-lg bg-gray-800 px-3 py-1 text-xs text-gray-200 hover:bg-gray-700"
                         >
-                            Logout
-                        </button>
+                            ← Back to Dashboard
+                        </a>
                     </div>
                 </header>
 

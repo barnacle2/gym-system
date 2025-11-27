@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import MemberForm, { FormData as FormDataType, Member as MemberType } from '@/components/gym/member-form';
 import KPIs from '@/components/gym/kpis';
 import Filters from '@/components/gym/filters';
@@ -64,7 +64,22 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
     });
     const [isEditing, setIsEditing] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [showEditSuccess, setShowEditSuccess] = useState(false);
+    const [showRenewSuccess, setShowRenewSuccess] = useState(false);
+    const [showDeactivateSuccess, setShowDeactivateSuccess] = useState(false);
     const [lastMemberName, setLastMemberName] = useState('');
+    const [editingMemberName, setEditingMemberName] = useState('');
+    const [renewedMemberName, setRenewedMemberName] = useState('');
+    const [deactivatedMemberName, setDeactivatedMemberName] = useState('');
+    const [isDeactivating, setIsDeactivating] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
+    const [memberToDelete, setMemberToDelete] = useState<{id: string, name: string} | null>(null);
+    const [deletedMemberName, setDeletedMemberName] = useState('');
+    const [lastEditedId, setLastEditedId] = useState<string | null>(null);
+    const [pendingScrollToNew, setPendingScrollToNew] = useState(false);
+    const formRef = useRef<HTMLDivElement>(null);
+    const memberRowRefs = useRef<Record<string, HTMLTableRowElement | null>>({});
 
     const handleLogout = (e: React.FormEvent) => {
         e.preventDefault();
@@ -131,6 +146,23 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
         setMembers(initialMembers);
     }, [initialMembers]);
 
+    // After creating a new member, find the newest one and remember its ID for scrolling
+    useEffect(() => {
+        if (!pendingScrollToNew || members.length === 0) return;
+
+        const newest = [...members].sort((a, b) => {
+            const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return bDate - aDate;
+        })[0];
+
+        if (newest) {
+            setLastEditedId(newest.id);
+        }
+
+        setPendingScrollToNew(false);
+    }, [pendingScrollToNew, members]);
+
     // Filter members based on current filters
     const filteredMembers = members
         .filter(member => {
@@ -184,13 +216,18 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
 
         if (formData.id) {
             router.put(`/members/${formData.id}`, data, {
-                onSuccess: () => resetForm()
+                onSuccess: () => {
+                    setShowEditSuccess(true);
+                    resetForm();
+                }
             });
         } else {
             router.post('/members', data, {
+                preserveScroll: true,
                 onSuccess: () => {
                     setLastMemberName(formData.fullName || 'New member');
                     setShowSuccessModal(true);
+                    setPendingScrollToNew(true);
                     resetForm();
                 }
             });
@@ -222,11 +259,55 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
             endDate: member.endDate,
             notes: member.notes,
         });
+        setEditingMemberName(member.fullName);
+        setLastEditedId(member.id);
         setIsEditing(true);
+
+        // Scroll to the form after a short delay to allow the state to update
+        setTimeout(() => {
+            formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
     };
 
-        const toggleMemberStatus = (id: string) => {
-        router.patch(`/members/${id}/toggle-status`, {}, { preserveScroll: true });
+    const scrollToMember = (id: string) => {
+        // Wait for the next tick to ensure the DOM is updated
+        setTimeout(() => {
+            const row = memberRowRefs.current?.[id];
+            if (row) {
+                // First, scroll to the top of the page to ensure we can scroll down to the member
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // Then scroll to the member row
+                setTimeout(() => {
+                    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Add a highlight effect
+                    row.classList.add('bg-blue-500/10', 'transition-colors', 'duration-1000');
+                    
+                    // Remove the highlight after 2 seconds
+                    setTimeout(() => {
+                        row.classList.remove('bg-blue-500/10');
+                    }, 2000);
+                }, 300);
+            }
+        }, 100);
+    };
+
+    const toggleMemberStatus = (id: string) => {
+        const member = members.find(m => m.id === id);
+        if (member) {
+            setDeactivatedMemberName(member.fullName);
+            setLastEditedId(id);
+            setIsDeactivating(!member.inactive);
+            
+            router.patch(`/members/${id}/toggle-status`, {}, { 
+                preserveScroll: true,
+                onSuccess: () => {
+                    setShowDeactivateSuccess(true);
+                    router.reload({ only: ['members'] });
+                }
+            });
+        }
     };
 
     const sendPasswordReset = (id: string) => {
@@ -235,12 +316,50 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
     };
 
     const renewMember = (id: string) => {
-        router.patch(`/members/${id}/renew`);
+        const member = members.find(m => m.id === id);
+        if (member) {
+            setRenewedMemberName(member.fullName);
+            setLastEditedId(id); // Store the member ID for scrolling
+            router.patch(`/members/${id}/renew`, {}, {
+                onSuccess: () => {
+                    setShowRenewSuccess(true);
+                    // Refresh members data
+                    router.reload({ only: ['members'] });
+                }
+            });
+        }
     };
 
     const deleteMember = (id: string) => {
-        if (!window.confirm('Delete this member and their account? This action cannot be undone.')) return;
-        router.delete(`/members/${id}`);
+        const member = members.find(m => m.id === id);
+        if (member) {
+            setMemberToDelete({ id, name: member.fullName });
+            setShowDeleteConfirm(true);
+        }
+    };
+
+    const confirmDelete = () => {
+        if (!memberToDelete) return;
+        
+        setDeletedMemberName(memberToDelete.name);
+        
+        router.delete(`/members/${memberToDelete.id}`, {
+            onSuccess: () => {
+                setShowDeleteConfirm(false);
+                setShowDeleteSuccess(true);
+                // We'll handle the refresh after showing success
+            },
+            onError: () => {
+                setShowDeleteConfirm(false);
+            },
+            preserveScroll: true
+        });
+    };
+    
+    const handleDeleteSuccessClose = () => {
+        // Just close the success modal; the members list has already been
+        // updated by the Inertia delete response (with preserveScroll)
+        setShowDeleteSuccess(false);
     };
 
     return (
@@ -301,7 +420,7 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
                 <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px,minmax(0,1fr)]">
                         {/* Left Panel - Member form card */}
-                        <aside className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 shadow-lg shadow-slate-950/40">
+                        <aside ref={formRef} className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 shadow-lg shadow-slate-950/40">
                             <div className="mb-4 flex items-start justify-between gap-2">
                                 <div>
                                     <h2 className="text-sm font-semibold text-gray-100">Member form</h2>
@@ -373,6 +492,7 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
                                             sendPasswordReset={sendPasswordReset}
                                             formatDate={formatDate}
                                             deleteMember={deleteMember}
+                                            memberRowRefs={memberRowRefs}
                                         />
                                     </div>
                                     <aside className="flex flex-col rounded-xl border border-slate-800 bg-slate-950/70 p-4">
@@ -446,7 +566,14 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
                         <div className="mt-5 flex items-center justify-center gap-3">
                             <button
                                 type="button"
-                                onClick={() => setShowSuccessModal(false)}
+                                onClick={() => {
+                                    setShowSuccessModal(false);
+                                    if (lastEditedId) {
+                                        setTimeout(() => {
+                                            scrollToMember(lastEditedId);
+                                        }, 100);
+                                    }
+                                }}
                                 className="cursor-pointer px-4 py-2 rounded-lg bg-emerald-600 text-sm font-medium text-white hover:bg-emerald-500"
                             >
                                 Got it
@@ -456,6 +583,189 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
                 </div>
             )}
 
+            {showEditSuccess && (
+                <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                    <div className="relative w-full max-w-md rounded-2xl border border-emerald-500/30 bg-slate-950/95 p-6 shadow-2xl">
+                        <div className="absolute inset-x-10 -top-6 flex justify-center">
+                            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/90 text-slate-950 shadow-lg">
+                                <span className="text-2xl">✓</span>
+                            </div>
+                        </div>
+                        <div className="mt-4 text-center space-y-2">
+                            <h2 className="text-lg font-semibold text-gray-100">Member updated successfully</h2>
+                            <p className="text-sm text-gray-400">
+                                {editingMemberName ? (
+                                    <>Details for <span className="font-medium text-gray-200">{editingMemberName}</span> have been updated.</>
+                                ) : (
+                                    <>Member details have been successfully updated.</>
+                                )}
+                            </p>
+                        </div>
+                        <div className="mt-5 flex items-center justify-center gap-3">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowEditSuccess(false);
+                                    if (lastEditedId) {
+                                        setTimeout(() => {
+                                            scrollToMember(lastEditedId);
+                                        }, 100);
+                                    }
+                                }}
+                                className="cursor-pointer px-4 py-2 rounded-lg bg-emerald-600 text-sm font-medium text-white hover:bg-emerald-500"
+                            >
+                                Got it
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showRenewSuccess && (
+                <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                    <div className="relative w-full max-w-md rounded-2xl border border-emerald-500/30 bg-slate-950/95 p-6 shadow-2xl">
+                        <div className="absolute inset-x-10 -top-6 flex justify-center">
+                            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/90 text-slate-950 shadow-lg">
+                                <span className="text-2xl">✓</span>
+                            </div>
+                        </div>
+                        <div className="mt-4 text-center space-y-2">
+                            <h2 className="text-lg font-semibold text-gray-100">Membership Renewed</h2>
+                            <p className="text-sm text-gray-400">
+                                {renewedMemberName ? (
+                                    <><span className="font-medium text-gray-200">{renewedMemberName}</span>'s membership has been successfully renewed.</>
+                                ) : (
+                                    <>Membership has been successfully renewed.</>
+                                )}
+                            </p>
+                        </div>
+                        <div className="mt-5 flex items-center justify-center gap-3">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowRenewSuccess(false);
+                                    if (lastEditedId) {
+                                        // Scroll to the renewed member after a short delay
+                                        setTimeout(() => {
+                                            scrollToMember(lastEditedId);
+                                        }, 100);
+                                    }
+                                }}
+                                className="cursor-pointer px-4 py-2 rounded-lg bg-emerald-600 text-sm font-medium text-white hover:bg-emerald-500"
+                            >
+                                Got it
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showDeactivateSuccess && ( // Modal for deactivate success
+                <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                    <div className="relative w-full max-w-md rounded-2xl border border-emerald-500/30 bg-slate-950/95 p-6 shadow-2xl">
+                        <div className="absolute inset-x-10 -top-6 flex justify-center">
+                            <div className={`inline-flex h-12 w-12 items-center justify-center rounded-full ${isDeactivating ? 'bg-amber-500/90' : 'bg-emerald-500/90'} text-slate-950 shadow-lg`}>
+                                <span className="text-2xl">✓</span>
+                            </div>
+                        </div>
+                        <div className="mt-4 text-center space-y-2">
+                            <h2 className="text-lg font-semibold text-gray-100">
+                                {isDeactivating ? 'Account Deactivated' : 'Account Activated'}
+                            </h2>
+                            <p className="text-sm text-gray-400">
+                                {deactivatedMemberName ? (
+                                    <>
+                                        <span className="font-medium text-gray-200">{deactivatedMemberName}</span>'s account has been {isDeactivating ? 'deactivated' : 'activated'} successfully.
+                                    </>
+                                ) : (
+                                    <>Account has been {isDeactivating ? 'deactivated' : 'activated'} successfully.</>
+                                )}
+                            </p>
+                        </div>
+                        <div className="mt-5 flex items-center justify-center gap-3">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowDeactivateSuccess(false);
+                                    if (lastEditedId) {
+                                        setTimeout(() => {
+                                            scrollToMember(lastEditedId);
+                                        }, 100);
+                                    }
+                                }}
+                                className="cursor-pointer px-4 py-2 rounded-lg bg-emerald-600 text-sm font-medium text-white hover:bg-emerald-500"
+                            >
+                                Got it
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showDeleteConfirm && memberToDelete && ( // Modal for delete confirmation
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                    <div className="relative w-full max-w-md rounded-2xl border border-red-500/30 bg-slate-950/95 p-6 shadow-2xl">
+                        <div className="absolute inset-x-10 -top-6 flex justify-center">
+                            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-red-500/90 text-slate-950 shadow-lg">
+                                <span className="text-2xl">!</span>
+                            </div>
+                        </div>
+                        <div className="mt-4 text-center space-y-2">
+                            <h2 className="text-lg font-semibold text-gray-100">
+                                Delete Member Account
+                            </h2>
+                            <p className="text-sm text-gray-400">
+                                Are you sure you want to delete <span className="font-medium text-gray-200">{memberToDelete.name}</span>'s account? This action cannot be undone.
+                            </p>
+                        </div>
+                        <div className="mt-5 flex items-center justify-center gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setShowDeleteConfirm(false)}
+                                className="cursor-pointer px-4 py-2 rounded-lg bg-gray-600 text-sm font-medium text-white hover:bg-gray-500"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={confirmDelete}
+                                className="cursor-pointer px-4 py-2 rounded-lg bg-red-600 text-sm font-medium text-white hover:bg-red-500"
+                            >
+                                Yes, Delete Account
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showDeleteSuccess && ( // Modal for delete success
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                    <div className="relative w-full max-w-md rounded-2xl border border-emerald-500/30 bg-slate-950/95 p-6 shadow-2xl">
+                        <div className="absolute inset-x-10 -top-6 flex justify-center">
+                            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/90 text-slate-950 shadow-lg">
+                                <span className="text-2xl">✓</span>
+                            </div>
+                        </div>
+                        <div className="mt-4 text-center space-y-2">
+                            <h2 className="text-lg font-semibold text-gray-100">
+                                Account Deleted Successfully
+                            </h2>
+                            <p className="text-sm text-gray-400">
+                                <span className="font-medium text-gray-200">{deletedMemberName}</span>'s account has been permanently deleted.
+                            </p>
+                        </div>
+                        <div className="mt-5 flex items-center justify-center gap-3">
+                            <button
+                                type="button"
+                                onClick={handleDeleteSuccessClose}
+                                className="cursor-pointer px-4 py-2 rounded-lg bg-emerald-600 text-sm font-medium text-white hover:bg-emerald-500"
+                            >
+                                Got it
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }

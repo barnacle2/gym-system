@@ -146,15 +146,15 @@ export default function MemberProfile({ user, member, avatarUrl }: PageProps) {
   return (
     <>
       <Head title="Profile" />
-      <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black text-gray-100">
-        <header className="border-b border-gray-800 bg-slate-900/60 backdrop-blur supports-[backdrop-filter]:bg-slate-900/40">
+      <div className="min-h-screen bg-slate-950 text-gray-100">
+        <header className="border-b border-gray-800 bg-slate-900/80 backdrop-blur">
           <div className="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
             <h1 className="text-lg font-semibold">Profile</h1>
             <div className="space-x-2">
-              <Link href="/member/home" className="rounded-lg bg-gray-700 px-4 py-2 text-sm text-gray-200 hover:bg-gray-600">Back</Link>
+              <Link href="/member/home" className="rounded-lg bg-gray-700 hover:bg-gray-600 px-4 py-2 text-sm text-gray-200 transition-colors">Back</Link>
               <form method="post" action="/logout" className="inline">
                 <input type="hidden" name="_token" value={csrf} />
-                <button className="rounded-lg bg-gray-700 px-4 py-2 text-sm text-gray-200 hover:bg-gray-600">Logout</button>
+                <button type="submit" className="rounded-lg bg-gray-700 hover:bg-gray-600 px-4 py-2 text-sm text-gray-200 transition-colors ml-2">Logout</button>
               </form>
             </div>
           </div>
@@ -170,12 +170,12 @@ export default function MemberProfile({ user, member, avatarUrl }: PageProps) {
             <div className="flex flex-col md:flex-row gap-6">
               <div className="w-full md:w-1/3">
                 <div className="flex flex-col items-center">
-                  <div className="h-36 w-36 rounded-full overflow-hidden border border-gray-600 bg-slate-900">
+                  <div className="h-36 w-36 rounded-full overflow-hidden border border-gray-700 bg-slate-800/50">
                     {avatarUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
                     ) : (
-                      <div className="h-full w-full grid place-content-center text-5xl">👤</div>
+                      <div className="h-full w-full grid place-content-center text-5xl bg-slate-800/50">👤</div>
                     )}
                   </div>
                   <div className="mt-4 w-full flex flex-col items-center gap-2">
@@ -183,7 +183,7 @@ export default function MemberProfile({ user, member, avatarUrl }: PageProps) {
                       type="file"
                       accept="image/*"
                       onChange={handleFileChange}
-                      className="block w-auto text-xs text-gray-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer"
+                      className="block w-auto text-xs text-gray-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border file:border-blue-500 file:text-xs file:font-semibold file:bg-blue-600/20 file:text-blue-300 hover:file:bg-blue-700/30 file:cursor-pointer"
                     />
                     {uploadError && (
                       <div className="text-xs text-red-300 mt-1 text-center max-w-xs">{uploadError}</div>
@@ -194,9 +194,9 @@ export default function MemberProfile({ user, member, avatarUrl }: PageProps) {
 
               <div className="w-full md:w-2/3 grid grid-cols-1 gap-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
+                  <div className="bg-slate-800/40 p-3 rounded-lg border border-slate-700">
                     <label className="text-xs text-gray-400">Name</label>
-                    <div className="text-sm">{user.name}</div>
+                    <div className="text-sm text-gray-200">{user.name}</div>
                   </div>
                   <div>
                     <label className="text-xs text-gray-400">Email</label>
