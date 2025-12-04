@@ -19,9 +19,15 @@ type Props = {
   formatDate: (s: string) => string;
   deleteMember: (id: string) => void;
   memberRowRefs: React.RefObject<Record<string, HTMLTableRowElement | null>>;
+  filterStatus: string;
+  setFilterStatus: (v: string) => void;
+  filterPlan: string;
+  setFilterPlan: (v: string) => void;
+  filterDays: number;
+  setFilterDays: (v: number) => void;
 };
 
-export default function MembersTable({ members, filteredMembers, computeStatus, editMember, renewMember, toggleMemberStatus, sendPasswordReset, formatDate, deleteMember, memberRowRefs }: Props) {
+export default function MembersTable({ members, filteredMembers, computeStatus, editMember, renewMember, toggleMemberStatus, sendPasswordReset, formatDate, deleteMember, memberRowRefs, filterStatus, setFilterStatus, filterPlan, setFilterPlan, filterDays, setFilterDays }: Props) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const displayedMembers = useMemo(() => {
@@ -50,19 +56,54 @@ export default function MembersTable({ members, filteredMembers, computeStatus, 
 
   return (
     <div className="p-4">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <h3 className="text-sm font-semibold text-gray-100">Member Overview</h3>
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search by name or email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-64 pl-9 pr-3 py-1.5 text-xs bg-slate-900 border border-slate-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-blue-500"
-          />
-          <svg className="absolute left-2.5 top-2 w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+        <div className="flex flex-wrap items-center gap-2 justify-end">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-56 pl-9 pr-3 py-1.5 text-xs bg-slate-900 border border-slate-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-blue-500"
+            />
+            <svg className="absolute left-2.5 top-2 w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="px-2 py-1.5 bg-slate-950 border border-gray-600 rounded-lg text-[11px] text-gray-200 focus:outline-none focus:border-blue-500"
+          >
+            <option value="ALL">All statuses</option>
+            <option value="ACTIVE">Active</option>
+            <option value="EXPIRING">Expiring soon</option>
+            <option value="EXPIRED">Expired</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
+          <select
+            value={filterPlan}
+            onChange={(e) => setFilterPlan(e.target.value)}
+            className="px-2 py-1.5 bg-slate-950 border border-gray-600 rounded-lg text-[11px] text-gray-200 focus:outline-none focus:border-blue-500"
+          >
+            <option value="ALL">All plans</option>
+            <option value="Daily">Daily</option>
+            <option value="Monthly">Monthly</option>
+            <option value="Quarterly">Quarterly</option>
+            <option value="Semi-Annual">Semi-Annual</option>
+            <option value="Annual">Annual</option>
+          </select>
+          <select
+            value={filterDays}
+            onChange={(e) => setFilterDays(parseInt(e.target.value))}
+            className="px-2 py-1.5 bg-slate-950 border border-gray-600 rounded-lg text-[11px] text-gray-200 focus:outline-none focus:border-blue-500"
+          >
+            <option value={0}>All dates</option>
+            <option value={7}>Expiring in 7 days</option>
+            <option value={14}>Expiring in 14 days</option>
+            <option value={30}>Expiring in 30 days</option>
+          </select>
         </div>
       </div>
       <div className="overflow-x-auto">

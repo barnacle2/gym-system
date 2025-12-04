@@ -34,6 +34,15 @@ interface TimeLog {
   is_active: boolean;
 }
 
+interface MonthlyTimeLogGroup {
+  month: string; // e.g. "Dec"
+  year: string;  // e.g. "2025"
+  sessions: number;
+  hours: number;
+  members: number;
+  logs: TimeLog[];
+}
+
 interface DailySession {
   date: string;
   sessions: number;
@@ -46,6 +55,7 @@ interface MonthlySession {
   hours: number;
   days?: number;
   members?: number;
+  logs?: TimeLog[];
 }
 
 interface TopMember {
@@ -92,11 +102,11 @@ interface PageProps {
     timeLogs: TimeLog[];
   };
   timeMonthly?: {
-    month: string;
+    year: string;
     totalSessions: number;
     totalHours: number;
     uniqueMembers: number;
-    dailySessions: DailySession[];
+    monthlyTotals: MonthlyTimeLogGroup[];
   };
   timeAnnual?: {
     year: string;
@@ -115,6 +125,7 @@ export default function Reports() {
   const [printMode, setPrintMode] = useState<'all' | 'sales' | 'time'>('all');
   const [expandedYearIndex, setExpandedYearIndex] = useState<number | null>(null);
   const [expandedMonthIndex, setExpandedMonthIndex] = useState<number | null>(null);
+  const [expandedTimeYearIndex, setExpandedTimeYearIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (props.activeTab && props.activeTab !== activeTab) {
@@ -186,7 +197,7 @@ export default function Reports() {
       case 'time-daily':
         return props.timeDaily?.date ? `Date: ${props.timeDaily.date}` : '';
       case 'time-monthly':
-        return props.timeMonthly?.month ? `Month: ${props.timeMonthly.month}` : '';
+        return props.timeMonthly?.year ? `Year: ${props.timeMonthly.year}` : '';
       case 'time-annual':
         return props.timeAnnual?.year ? `Year: ${props.timeAnnual.year}` : '';
       default:
@@ -489,35 +500,93 @@ export default function Reports() {
         return (
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-100">Monthly Time Logs Report</h3>
-            <p className="text-xs text-gray-400">Member activity and usage for {props.timeMonthly?.month}.</p>
-            
+            <p className="text-xs text-gray-400">Member activity and usage for {props.timeMonthly?.year}.</p>
+
             {props.timeMonthly && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="rounded-lg border border-slate-700 bg-slate-900/60 p-4">
-                    <div className="text-xs text-gray-400 mb-1">Total Sessions</div>
+                    <div className="text-xs text-gray-400 mb-1">Total Sessions (Year)</div>
                     <div className="text-lg font-bold text-blue-300">{props.timeMonthly.totalSessions}</div>
                   </div>
                   <div className="rounded-lg border border-slate-700 bg-slate-900/60 p-4">
-                    <div className="text-xs text-gray-400 mb-1">Total Hours</div>
+                    <div className="text-xs text-gray-400 mb-1">Total Hours (Year)</div>
                     <div className="text-lg font-bold text-purple-300">{props.timeMonthly.totalHours}</div>
                   </div>
                   <div className="rounded-lg border border-slate-700 bg-slate-900/60 p-4">
-                    <div className="text-xs text-gray-400 mb-1">Unique Members</div>
+                    <div className="text-xs text-gray-400 mb-1">Unique Members (Year)</div>
                     <div className="text-lg font-bold text-emerald-300">{props.timeMonthly.uniqueMembers}</div>
                   </div>
                 </div>
 
                 <div className="rounded-lg border border-slate-700 bg-slate-900/60 p-4">
-                  <h4 className="text-sm font-medium text-gray-200 mb-3">Daily Breakdown</h4>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {props.timeMonthly.dailySessions.map((day, i) => (
-                      <div key={i} className="flex justify-between items-center p-2 bg-slate-800/50 rounded">
-                        <span className="text-xs text-gray-300">{day.date}</span>
-                        <div className="text-right">
-                          <div className="text-xs font-medium text-blue-300">{day.sessions} sessions</div>
-                          <div className="text-[10px] text-gray-500">{day.hours} hours</div>
-                        </div>
+                  <h4 className="text-sm font-medium text-gray-200 mb-3">Monthly Breakdown</h4>
+                  <div className="space-y-2 max-h-72 overflow-y-auto">
+                    {props.timeMonthly.monthlyTotals.map((monthGroup: MonthlyTimeLogGroup, index: number) => (
+                      <div
+                        key={`${monthGroup.year}-${monthGroup.month}`}
+                        className="bg-slate-800/50 rounded"
+                      >
+                        <button
+                          type="button"
+                          className="w-full flex justify-between items-center p-2 text-left hover:bg-slate-800/80"
+                          onClick={() =>
+                            setExpandedMonthIndex(expandedMonthIndex === index ? null : index)
+                          }
+                        >
+                          <span className="text-xs text-gray-300">
+                            {monthGroup.month} {monthGroup.year}
+                          </span>
+                          <div className="text-right">
+                            <div className="text-xs font-medium text-blue-300">
+                              {monthGroup.sessions} sessions
+                            </div>
+                            <div className="text-[10px] text-gray-500">
+                              {monthGroup.hours} hours • {monthGroup.members} members
+                            </div>
+                          </div>
+                        </button>
+
+                        {expandedMonthIndex === index && monthGroup.logs.length > 0 && (
+                          <div className="border-t border-slate-700 bg-slate-900/80">
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-[11px]">
+                                <thead>
+                                  <tr className="border-b border-slate-700">
+                                    <th className="text-left p-2 text-gray-400">Member</th>
+                                    <th className="text-left p-2 text-gray-400">Time In</th>
+                                    <th className="text-left p-2 text-gray-400">Time Out</th>
+                                    <th className="text-left p-2 text-gray-400">Duration</th>
+                                    <th className="text-right p-2 text-gray-400">Credits</th>
+                                    <th className="text-center p-2 text-gray-400">Status</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {monthGroup.logs.map((log: TimeLog, i: number) => (
+                                    <tr key={i} className="border-b border-slate-800">
+                                      <td className="p-2">{log.member}</td>
+                                      <td className="p-2">{log.time_in}</td>
+                                      <td className="p-2">{log.time_out}</td>
+                                      <td className="p-2">{log.duration}</td>
+                                      <td className="p-2 text-right">{log.credits_used}</td>
+                                      <td className="p-2 text-center">
+                                        <span
+                                          className={`px-2 py-0.5 rounded-full text-[10px] ${
+                                            log.is_active
+                                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                              : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                          }`}
+                                        >
+                                          {log.is_active ? 'Active' : 'Closed'}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -551,15 +620,68 @@ export default function Reports() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div className="rounded-lg border border-slate-700 bg-slate-900/60 p-4">
-                    <h4 className="text-sm font-medium text-gray-200 mb-3">Monthly Breakdown</h4>
+                    <h4 className="text-sm font-medium text-gray-200 mb-3">Yearly Breakdown</h4>
                     <div className="space-y-2 max-h-64 overflow-y-auto">
-                      {props.timeAnnual.monthlySessions.map((month, i) => (
-                        <div key={i} className="flex justify-between items-center p-2 bg-slate-800/50 rounded">
-                          <span className="text-xs text-gray-300">{month.month}</span>
-                          <div className="text-right">
-                            <div className="text-xs font-medium text-blue-300">{month.sessions} sessions</div>
-                            <div className="text-[10px] text-gray-500">{month.hours} hours</div>
-                          </div>
+                      {props.timeAnnual.monthlySessions.map((yearData: MonthlySession, index: number) => (
+                        <div key={index} className="bg-slate-800/50 rounded">
+                          <button
+                            type="button"
+                            className="w-full flex justify-between items-center p-2 text-left hover:bg-slate-800/80"
+                            onClick={() =>
+                              setExpandedTimeYearIndex(
+                                expandedTimeYearIndex === index ? null : index,
+                              )
+                            }
+                          >
+                            <span className="text-xs text-gray-300">{yearData.month}</span>
+                            <div className="text-right">
+                              <div className="text-xs font-medium text-blue-300">
+                                {yearData.sessions} sessions
+                              </div>
+                              <div className="text-[10px] text-gray-500">{yearData.hours} hours</div>
+                            </div>
+                          </button>
+
+                          {expandedTimeYearIndex === index && yearData.logs && yearData.logs.length > 0 && (
+                            <div className="border-t border-slate-700 bg-slate-900/80">
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-[11px]">
+                                  <thead>
+                                    <tr className="border-b border-slate-700">
+                                      <th className="text-left p-2 text-gray-400">Member</th>
+                                      <th className="text-left p-2 text-gray-400">Time In</th>
+                                      <th className="text-left p-2 text-gray-400">Time Out</th>
+                                      <th className="text-left p-2 text-gray-400">Duration</th>
+                                      <th className="text-right p-2 text-gray-400">Credits</th>
+                                      <th className="text-center p-2 text-gray-400">Status</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {yearData.logs.map((log: TimeLog, i: number) => (
+                                      <tr key={i} className="border-b border-slate-800">
+                                        <td className="p-2">{log.member}</td>
+                                        <td className="p-2">{log.time_in}</td>
+                                        <td className="p-2">{log.time_out}</td>
+                                        <td className="p-2">{log.duration}</td>
+                                        <td className="p-2 text-right">{log.credits_used}</td>
+                                        <td className="p-2 text-center">
+                                          <span
+                                            className={`px-2 py-0.5 rounded-full text-[10px] ${
+                                              log.is_active
+                                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                                : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                            }`}
+                                          >
+                                            {log.is_active ? 'Active' : 'Closed'}
+                                          </span>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -940,8 +1062,8 @@ export default function Reports() {
                 <table className="mb-3 w-full border-collapse text-[11px]">
                   <tbody>
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-medium text-gray-700">Month</td>
-                      <td className="border border-gray-300 px-2 py-1">{props.timeMonthly.month}</td>
+                      <td className="border border-gray-300 px-2 py-1 font-medium text-gray-700">Year</td>
+                      <td className="border border-gray-300 px-2 py-1">{props.timeMonthly.year}</td>
                     </tr>
                     <tr>
                       <td className="border border-gray-300 px-2 py-1 font-medium text-gray-700">Total Sessions</td>

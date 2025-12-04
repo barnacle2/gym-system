@@ -148,44 +148,75 @@ class ReportsController extends Controller
         $timeDailyActiveSessions = $timeSessionsToday->where('is_active', true)->count();
         $timeDailyTotalHours = $timeSessionsToday->sum(fn ($s) => $s->getDurationInMinutes() / 60);
 
-        // Time Logs - Monthly
-        $timeSessionsMonth = TimeSession::whereBetween('time_in', [$startOfMonth, $endOfMonth])
-            ->with('user')
-            ->orderBy('time_in')
-            ->get();
-
-        $timeMonthlyDailySessions = $timeSessionsMonth->groupBy(fn ($session) => $session->time_in->format('Y-m-d'))
-            ->map(fn ($daySessions) => [
-                'date' => $daySessions->first()->time_in->format('M j'),
-                'sessions' => $daySessions->count(),
-                'hours' => round($daySessions->sum(fn ($s) => $s->getDurationInMinutes() / 60), 2),
-            ])
-            ->values();
-
-        $timeMonthlyTotalSessions = $timeSessionsMonth->count();
-        $timeMonthlyTotalHours = $timeSessionsMonth->sum(fn ($s) => $s->getDurationInMinutes() / 60);
-        $timeMonthlyUniqueMembers = $timeSessionsMonth->pluck('user_id')->unique()->count();
-
-        // Time Logs - Annual
+        // Time Logs - Year-wide dataset (used for both Monthly and Annual tabs)
         $timeSessionsYear = TimeSession::whereBetween('time_in', [$startOfYear, $endOfYear])
             ->with('user')
             ->orderBy('time_in')
             ->get();
 
-        $timeAnnualMonthlySessions = $timeSessionsYear->groupBy(fn ($session) => $session->time_in->format('Y-m'))
-            ->map(fn ($monthSessions) => [
-                'month' => $monthSessions->first()->time_in->format('M'),
-                'sessions' => $monthSessions->count(),
-                'hours' => round($monthSessions->sum(fn ($s) => $s->getDurationInMinutes() / 60), 2),
-                'members' => $monthSessions->pluck('user_id')->unique()->count(),
-            ])
+        // For the Time Logs - Monthly tab we want a year-wide monthly breakdown
+        // with full session details for each month (similar to Sales - Monthly).
+        $timeMonthlyTotals = $timeSessionsYear->groupBy(fn ($session) => $session->time_in->format('Y-m'))
+            ->map(function ($monthSessions) {
+                $first = $monthSessions->first();
+
+                return [
+                    'month' => $first->time_in->format('M'),
+                    'year' => $first->time_in->format('Y'),
+                    'sessions' => $monthSessions->count(),
+                    'hours' => round($monthSessions->sum(fn ($s) => $s->getDurationInMinutes() / 60), 2),
+                    'members' => $monthSessions->pluck('user_id')->unique()->count(),
+                    'logs' => $monthSessions->map(function ($session) {
+                        return [
+                            'id' => $session->id,
+                            'member' => $session->user->name,
+                            'time_in' => $session->time_in?->format('Y-m-d H:i'),
+                            'time_out' => $session->time_out?->format('Y-m-d H:i'),
+                            'duration' => $session->getFormattedDuration(),
+                            'credits_used' => $session->credits_used,
+                            'is_active' => $session->is_active,
+                        ];
+                    })->values(),
+                ];
+            })
             ->values();
 
-        $timeAnnualTotalSessions = $timeSessionsYear->count();
-        $timeAnnualTotalHours = $timeSessionsYear->sum(fn ($s) => $s->getDurationInMinutes() / 60);
-        $timeAnnualUniqueMembers = $timeSessionsYear->pluck('user_id')->unique()->count();
+        $timeMonthlyTotalSessions = $timeSessionsYear->count();
+        $timeMonthlyTotalHours = $timeSessionsYear->sum(fn ($s) => $s->getDurationInMinutes() / 60);
+        $timeMonthlyUniqueMembers = $timeSessionsYear->pluck('user_id')->unique()->count();
 
-        $timeAnnualTopMembers = $timeSessionsYear->groupBy('user_id')
+        // Time Logs - Annual (yearly breakdown over all time)
+        $timeSessionsAll = TimeSession::with('user')
+            ->orderBy('time_in')
+            ->get();
+
+        $timeAnnualMonthlySessions = $timeSessionsAll->groupBy(fn ($session) => $session->time_in->format('Y'))
+            ->map(function ($yearSessions, $year) {
+                return [
+                    'month' => $year, // kept key name for frontend compatibility, value is actually the year
+                    'sessions' => $yearSessions->count(),
+                    'hours' => round($yearSessions->sum(fn ($s) => $s->getDurationInMinutes() / 60), 2),
+                    'members' => $yearSessions->pluck('user_id')->unique()->count(),
+                    'logs' => $yearSessions->map(function ($session) {
+                        return [
+                            'id' => $session->id,
+                            'member' => $session->user->name,
+                            'time_in' => $session->time_in?->format('Y-m-d H:i'),
+                            'time_out' => $session->time_out?->format('Y-m-d H:i'),
+                            'duration' => $session->getFormattedDuration(),
+                            'credits_used' => $session->credits_used,
+                            'is_active' => $session->is_active,
+                        ];
+                    })->values(),
+                ];
+            })
+            ->values();
+
+        $timeAnnualTotalSessions = $timeSessionsAll->count();
+        $timeAnnualTotalHours = $timeSessionsAll->sum(fn ($s) => $s->getDurationInMinutes() / 60);
+        $timeAnnualUniqueMembers = $timeSessionsAll->pluck('user_id')->unique()->count();
+
+        $timeAnnualTopMembers = $timeSessionsAll->groupBy('user_id')
             ->map(fn ($userSessions) => [
                 'name' => $userSessions->first()->user->name,
                 'sessions' => $userSessions->count(),
@@ -220,11 +251,11 @@ class ReportsController extends Controller
             'salesAnnual' => $annualSalesData,
             'timeDaily' => $timeDailyData,
             'timeMonthly' => [
-                'month' => now()->format('F Y'),
+                'year' => now()->format('Y'),
                 'totalSessions' => $timeMonthlyTotalSessions,
                 'totalHours' => round($timeMonthlyTotalHours, 2),
                 'uniqueMembers' => $timeMonthlyUniqueMembers,
-                'dailySessions' => $timeMonthlyDailySessions,
+                'monthlyTotals' => $timeMonthlyTotals,
             ],
             'timeAnnual' => [
                 'year' => now()->format('Y'),

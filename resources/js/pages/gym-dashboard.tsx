@@ -2,7 +2,6 @@ import { Head, router, useForm } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
 import MemberForm, { FormData as FormDataType, Member as MemberType } from '@/components/gym/member-form';
 import KPIs from '@/components/gym/kpis';
-import Filters from '@/components/gym/filters';
 import MembersTable from '@/components/gym/members-table';
 
 interface Member {
@@ -446,17 +445,6 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
 
                         {/* Right Panel - Dashboard */}
                         <section className="rounded-2xl border border-slate-800 bg-slate-950/70 shadow-lg shadow-slate-950/40 overflow-hidden">
-                            <Filters
-                                searchTerm={searchTerm}
-                                setSearchTerm={setSearchTerm}
-                                filterStatus={filterStatus}
-                                setFilterStatus={setFilterStatus}
-                                filterPlan={filterPlan}
-                                setFilterPlan={setFilterPlan}
-                                filterDays={filterDays}
-                                setFilterDays={setFilterDays}
-                            />
-
                             <div className="p-4 sm:p-5 lg:p-6">
                                 <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                     <div className="flex flex-col gap-1">
@@ -493,6 +481,12 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
                                             formatDate={formatDate}
                                             deleteMember={deleteMember}
                                             memberRowRefs={memberRowRefs}
+                                            filterStatus={filterStatus}
+                                            setFilterStatus={setFilterStatus}
+                                            filterPlan={filterPlan}
+                                            setFilterPlan={setFilterPlan}
+                                            filterDays={filterDays}
+                                            setFilterDays={setFilterDays}
                                         />
                                     </div>
                                     <aside className="flex flex-col rounded-xl border border-slate-800 bg-slate-950/70 p-4">
