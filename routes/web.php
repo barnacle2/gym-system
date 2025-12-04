@@ -60,6 +60,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Admin view for member QR card
     Route::get('admin/members/{user}/qr', [MemberController::class, 'adminQr'])->name('admin.members.qr');
 
+    // Admin QR scanner (uses device camera to scan member QR codes)
+    Route::get('admin/qr-scanner', function () {
+        return Inertia::render('admin/qr-scanner');
+    })->name('admin.qr-scanner');
+
     // Time logs
     Route::get('admin/time-logs', [TimeTrackingController::class, 'adminLogs'])->name('admin.time-logs');
 

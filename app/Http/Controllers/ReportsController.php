@@ -26,7 +26,10 @@ class ReportsController extends Controller
             ->orderBy('created_at')
             ->get();
 
-        $dailyTransactions = $dailyLogs->map(fn ($log) => [
+        // Only show PAID items in Recent Transactions (mark_paid)
+        $dailyRevenueLogs = $dailyLogs->where('type', 'mark_paid');
+
+        $dailyTransactions = $dailyRevenueLogs->map(fn ($log) => [
             'time' => $log->created_at->format('H:i'),
             'type' => $log->type,
             'description' => $log->description,
@@ -35,8 +38,7 @@ class ReportsController extends Controller
             'balance_after' => (float) $log->balance_after,
         ]);
 
-        // Treat only actual payments (mark_paid) as revenue and use absolute value
-        $dailyRevenueLogs = $dailyLogs->where('type', 'mark_paid');
+        // Treat only mark_paid entries as revenue and use absolute value
         $dailyTotalRevenue = $dailyRevenueLogs->sum(function ($log) {
             return abs((float) $log->amount);
         });
@@ -55,7 +57,7 @@ class ReportsController extends Controller
             ->orderBy('created_at')
             ->get();
 
-        // Only count payments as revenue for the current month (kept for backward compatibility if needed elsewhere)
+        // Only count paid amounts as revenue for the current month
         $monthlyRevenueLogs = $monthlyLogs->where('type', 'mark_paid');
 
         $monthlyRevenue = $monthlyRevenueLogs->sum(function ($log) {
@@ -78,7 +80,7 @@ class ReportsController extends Controller
             ->orderBy('created_at')
             ->get();
 
-        // Only count payments as revenue for annual/monthly breakdown views
+        // Only count paid amounts as revenue for annual/monthly breakdown views
         $yearRevenueLogs = $yearLogs->where('type', 'mark_paid');
         $yearMonthlyTotals = $yearRevenueLogs
             ->groupBy(fn ($log) => $log->created_at->format('Y-m'))

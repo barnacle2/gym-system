@@ -70,7 +70,7 @@
             </div>
         @endif
 
-        @if($user)
+        @if($user && ($user['show_balance'] ?? false))
             <!-- Current Balance -->
             <div class="bg-slate-800/50 border border-gray-700 rounded-lg p-4 mb-6">
                 <div class="flex justify-between items-center">
@@ -100,9 +100,21 @@
             if (countdown <= 0) {
                 clearInterval(timer);
                 window.close();
-                // If window.close() doesn't work (some browsers block it), redirect to a blank page
+                // If window.close() doesn't work (some browsers block it), show a simple centered card
                 setTimeout(() => {
-                    document.body.innerHTML = '<div class="min-h-screen flex items-center justify-center text-gray-400"><p>You can now close this page.</p></div>';
+                    document.body.innerHTML = `
+                        <div class="min-h-screen flex items-center justify-center p-4 text-gray-200">
+                            <div class="max-w-md w-full bg-slate-900/80 border border-gray-700 rounded-2xl p-6 text-center shadow-2xl space-y-4">
+                                <p class="text-sm text-gray-400">You can now close this page.</p>
+                                <button
+                                    onclick="window.location.href='/dashboard#recent-activity'"
+                                    class="inline-flex items-center justify-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-slate-900"
+                                >
+                                    Go to Admin Dashboard
+                                </button>
+                            </div>
+                        </div>
+                    `;
                 }, 100);
             }
         }, 1000);

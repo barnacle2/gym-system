@@ -170,20 +170,25 @@ class TimeTrackingController extends Controller
                 'user' => null,
             ], 404);
         }
+        
+        $member = $user->member;
 
-        $activeSession = $user->getActiveTimeSession();
-
-        // Check balance for time in
-        if (!$activeSession && $user->getLiveBalance() < 8) {
+        // Block QR access for inactive or expired memberships (any plan)
+        $status = $member->status;
+        if ($member->inactive || ($status['code'] ?? null) === 'EXPIRED') {
             return response()->view('qr-result', [
                 'success' => false,
-                'message' => 'Insufficient balance. Minimum ₱8 credits required.',
+                'message' => 'Membership is inactive or expired. Please renew at the front desk.',
                 'user' => [
                     'name' => $user->name,
-                    'balance' => $user->getFormattedLiveBalance(),
+                    'plan' => $member->plan?->value,
+                    'balance' => null,
+                    'show_balance' => false,
                 ],
-            ], 400);
+            ], 403);
         }
+
+        $activeSession = $user->getActiveTimeSession();
 
         try {
             if ($activeSession) {
@@ -204,7 +209,10 @@ class TimeTrackingController extends Controller
                 'action' => $action,
                 'user' => [
                     'name' => $user->name,
+                    'plan' => $member->plan?->value,
                     'balance' => $user->getFormattedLiveBalance(),
+                    // Only Daily plan uses balance/credits; others use flat subscription
+                    'show_balance' => $member->plan && $member->plan->value === 'Daily',
                 ],
                 'session' => [
                     'time_in' => $session->time_in->format('h:i A'),
@@ -220,7 +228,9 @@ class TimeTrackingController extends Controller
                 'message' => 'Failed to process time tracking. Please try again.',
                 'user' => [
                     'name' => $user->name,
+                    'plan' => $member->plan?->value ?? null,
                     'balance' => $user->getFormattedLiveBalance(),
+                    'show_balance' => $member->plan && $member->plan->value === 'Daily',
                 ],
                 'error' => $e->getMessage(),
             ], 500);

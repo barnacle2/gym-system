@@ -79,6 +79,7 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
     const [pendingScrollToNew, setPendingScrollToNew] = useState(false);
     const formRef = useRef<HTMLDivElement>(null);
     const memberRowRefs = useRef<Record<string, HTMLTableRowElement | null>>({});
+    const recentActivityRef = useRef<HTMLDivElement | null>(null);
 
     const handleLogout = (e: React.FormEvent) => {
         e.preventDefault();
@@ -144,6 +145,13 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
     useEffect(() => {
         setMembers(initialMembers);
     }, [initialMembers]);
+
+    // Scroll to Recent Activity when coming from /dashboard#recent-activity (e.g. after QR scan)
+    useEffect(() => {
+        if (typeof window !== 'undefined' && window.location.hash === '#recent-activity' && recentActivityRef.current) {
+            recentActivityRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, []);
 
     // After creating a new member, find the newest one and remember its ID for scrolling
     useEffect(() => {
@@ -388,6 +396,12 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
                                 Balance Management
                             </a>
                             <a
+                                href="/admin/qr-scanner"
+                                className="cursor-pointer px-4 py-2 rounded-full bg-pink-600 text-white text-sm shadow-sm hover:bg-pink-500"
+                            >
+                                Scan QR
+                            </a>
+                            <a
                                 href="/admin/time-logs"
                                 className="cursor-pointer px-4 py-2 rounded-full bg-purple-600 text-white text-sm shadow-sm hover:bg-purple-500"
                             >
@@ -489,7 +503,11 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
                                             setFilterDays={setFilterDays}
                                         />
                                     </div>
-                                    <aside className="flex flex-col rounded-xl border border-slate-800 bg-slate-950/70 p-4">
+                                    <aside
+                                        id="recent-activity"
+                                        ref={recentActivityRef}
+                                        className="flex flex-col rounded-xl border border-slate-800 bg-slate-950/70 p-4"
+                                    >
                                         <div className="mb-3 flex items-center justify-between">
                                             <h3 className="text-sm font-semibold text-gray-100">Recent Activity</h3>
                                             <a
