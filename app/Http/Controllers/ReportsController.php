@@ -27,16 +27,18 @@ class ReportsController extends Controller
             ->get();
 
         // Only show PAID items in Recent Transactions (mark_paid)
-        $dailyRevenueLogs = $dailyLogs->where('type', 'mark_paid');
+        $dailyRevenueLogs = $dailyLogs->where('type', 'mark_paid')->values();
 
+        // Reindex to a plain array so Inertia sends a proper JSON list
         $dailyTransactions = $dailyRevenueLogs->map(fn ($log) => [
             'time' => $log->created_at->format('H:i'),
             'type' => $log->type,
             'description' => $log->description,
             'member' => $log->user?->name,
-            'amount' => (float) $log->amount,
+            // Always show paid amounts as positive numbers in reports
+            'amount' => (float) abs($log->amount),
             'balance_after' => (float) $log->balance_after,
-        ]);
+        ])->values();
 
         // Treat only mark_paid entries as revenue and use absolute value
         $dailyTotalRevenue = $dailyRevenueLogs->sum(function ($log) {

@@ -250,9 +250,8 @@ export default function Reports() {
                         </tr>
                       </thead>
                       <tbody>
-                        {props.salesDaily.transactions
-                          .filter((tx) => tx.type === 'purchase')
-                          .map((tx, i) => (
+                        {Array.isArray(props.salesDaily.transactions) &&
+                          props.salesDaily.transactions.map((tx, i) => (
                           <tr key={i} className="border-b border-slate-800">
                             <td className="p-2 whitespace-nowrap">
                               {props.salesDaily?.date
