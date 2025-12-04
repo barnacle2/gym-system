@@ -17,17 +17,224 @@ class ReportsController extends Controller
             abort(403);
         }
 
-        $tab = $request->get('tab', 'sales-daily');
+        $activeTab = $request->get('tab', 'sales-daily');
 
-        return match ($tab) {
-            'sales-daily' => $this->salesDaily(),
-            'sales-monthly' => $this->salesMonthly(),
-            'sales-annual' => $this->salesAnnual(),
-            'time-daily' => $this->timeDaily(),
-            'time-monthly' => $this->timeMonthly(),
-            'time-annual' => $this->timeAnnual(),
-            default => $this->salesDaily(),
-        };
+        // Sales - Daily
+        $today = now()->toDateString();
+        $dailyLogs = BalanceLog::whereDate('created_at', $today)
+            ->with('user')
+            ->orderBy('created_at')
+            ->get();
+
+        $dailyTransactions = $dailyLogs->map(fn ($log) => [
+            'time' => $log->created_at->format('H:i'),
+            'type' => $log->type,
+            'description' => $log->description,
+            'member' => $log->user?->name,
+            'amount' => (float) $log->amount,
+            'balance_after' => (float) $log->balance_after,
+        ]);
+
+        // Treat only actual payments (mark_paid) as revenue and use absolute value
+        $dailyRevenueLogs = $dailyLogs->where('type', 'mark_paid');
+        $dailyTotalRevenue = $dailyRevenueLogs->sum(function ($log) {
+            return abs((float) $log->amount);
+        });
+        $dailyTransactionCount = $dailyRevenueLogs->count();
+
+        $dailyEarnings = TimeSession::whereDate('time_in', $today)
+            ->whereNotNull('time_out')
+            ->where('credits_used', '>', 0)
+            ->sum('credits_used');
+
+        // Sales - Monthly / Annual
+        $startOfMonth = now()->startOfMonth();
+        $endOfMonth = now()->endOfMonth();
+
+        $monthlyLogs = BalanceLog::whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->orderBy('created_at')
+            ->get();
+
+        // Only count payments as revenue for the current month (kept for backward compatibility if needed elsewhere)
+        $monthlyRevenueLogs = $monthlyLogs->where('type', 'mark_paid');
+
+        $monthlyRevenue = $monthlyRevenueLogs->sum(function ($log) {
+            return abs((float) $log->amount);
+        });
+        $monthlyTransactionCount = $monthlyRevenueLogs->count();
+
+        $monthlyEarnings = TimeSession::whereBetween('time_in', [$startOfMonth, $endOfMonth])
+            ->whereNotNull('time_out')
+            ->where('credits_used', '>', 0)
+            ->sum('credits_used');
+
+        // For the Sales - Monthly tab, we want a YEAR-wide view grouped by month,
+        // with all payment transactions (mark_paid) listed per month.
+        $startOfYear = now()->startOfYear();
+        $endOfYear = now()->endOfYear();
+
+        $yearLogs = BalanceLog::whereBetween('created_at', [$startOfYear, $endOfYear])
+            ->with('user')
+            ->orderBy('created_at')
+            ->get();
+
+        // Only count payments as revenue for annual/monthly breakdown views
+        $yearRevenueLogs = $yearLogs->where('type', 'mark_paid');
+        $yearMonthlyTotals = $yearRevenueLogs
+            ->groupBy(fn ($log) => $log->created_at->format('Y-m'))
+            ->map(fn ($monthLogs) => [
+                'month' => $monthLogs->first()->created_at->format('M'),
+                'total' => (float) $monthLogs->sum(function ($log) {
+                    return abs((float) $log->amount);
+                }),
+                'count' => $monthLogs->count(),
+            ])
+            ->values();
+
+        $yearlyRevenue = $yearRevenueLogs->sum(function ($log) {
+            return abs((float) $log->amount);
+        });
+        $yearlyTransactionCount = $yearRevenueLogs->count();
+
+        $annualEarnings = TimeSession::whereBetween('time_in', [$startOfYear, $endOfYear])
+            ->whereNotNull('time_out')
+            ->where('credits_used', '>', 0)
+            ->sum('credits_used');
+
+        // Build detailed monthly totals with transactions for the Sales - Monthly tab
+        $monthlyTotalsWithTransactions = $yearRevenueLogs
+            ->groupBy(fn ($log) => $log->created_at->format('Y-m'))
+            ->map(function ($monthLogs) {
+                $first = $monthLogs->first();
+
+                return [
+                    'month' => $first->created_at->format('M'),
+                    'year' => $first->created_at->format('Y'),
+                    'total' => (float) $monthLogs->sum(function ($log) {
+                        return abs((float) $log->amount);
+                    }),
+                    'count' => $monthLogs->count(),
+                    'transactions' => $monthLogs->map(function ($log) {
+                        return [
+                            'time' => $log->created_at->format('Y-m-d H:i'),
+                            'type' => $log->type,
+                            'description' => $log->description,
+                            'member' => $log->user?->name,
+                            'amount' => (float) abs($log->amount),
+                            'balance_after' => (float) $log->balance_after,
+                        ];
+                    })->values(),
+                ];
+            })
+            ->values();
+
+        // Time Logs - Daily
+        $timeSessionsToday = TimeSession::whereDate('time_in', $today)
+            ->with('user')
+            ->orderBy('time_in')
+            ->get();
+
+        $timeDailyLogs = $timeSessionsToday->map(fn ($session) => [
+            'id' => $session->id,
+            'member' => $session->user->name,
+            'time_in' => $session->time_in?->format('H:i'),
+            'time_out' => $session->time_out?->format('H:i'),
+            'duration' => $session->getFormattedDuration(),
+            'credits_used' => $session->credits_used,
+            'is_active' => $session->is_active,
+        ]);
+
+        $timeDailyTotalSessions = $timeSessionsToday->count();
+        $timeDailyActiveSessions = $timeSessionsToday->where('is_active', true)->count();
+        $timeDailyTotalHours = $timeSessionsToday->sum(fn ($s) => $s->getDurationInMinutes() / 60);
+
+        // Time Logs - Monthly
+        $timeSessionsMonth = TimeSession::whereBetween('time_in', [$startOfMonth, $endOfMonth])
+            ->with('user')
+            ->orderBy('time_in')
+            ->get();
+
+        $timeMonthlyDailySessions = $timeSessionsMonth->groupBy(fn ($session) => $session->time_in->format('Y-m-d'))
+            ->map(fn ($daySessions) => [
+                'date' => $daySessions->first()->time_in->format('M j'),
+                'sessions' => $daySessions->count(),
+                'hours' => round($daySessions->sum(fn ($s) => $s->getDurationInMinutes() / 60), 2),
+            ])
+            ->values();
+
+        $timeMonthlyTotalSessions = $timeSessionsMonth->count();
+        $timeMonthlyTotalHours = $timeSessionsMonth->sum(fn ($s) => $s->getDurationInMinutes() / 60);
+        $timeMonthlyUniqueMembers = $timeSessionsMonth->pluck('user_id')->unique()->count();
+
+        // Time Logs - Annual
+        $timeSessionsYear = TimeSession::whereBetween('time_in', [$startOfYear, $endOfYear])
+            ->with('user')
+            ->orderBy('time_in')
+            ->get();
+
+        $timeAnnualMonthlySessions = $timeSessionsYear->groupBy(fn ($session) => $session->time_in->format('Y-m'))
+            ->map(fn ($monthSessions) => [
+                'month' => $monthSessions->first()->time_in->format('M'),
+                'sessions' => $monthSessions->count(),
+                'hours' => round($monthSessions->sum(fn ($s) => $s->getDurationInMinutes() / 60), 2),
+                'members' => $monthSessions->pluck('user_id')->unique()->count(),
+            ])
+            ->values();
+
+        $timeAnnualTotalSessions = $timeSessionsYear->count();
+        $timeAnnualTotalHours = $timeSessionsYear->sum(fn ($s) => $s->getDurationInMinutes() / 60);
+        $timeAnnualUniqueMembers = $timeSessionsYear->pluck('user_id')->unique()->count();
+
+        $timeAnnualTopMembers = $timeSessionsYear->groupBy('user_id')
+            ->map(fn ($userSessions) => [
+                'name' => $userSessions->first()->user->name,
+                'sessions' => $userSessions->count(),
+                'hours' => round($userSessions->sum(fn ($s) => $s->getDurationInMinutes() / 60), 2),
+            ])
+            ->sortByDesc('sessions')
+            ->take(10)
+            ->values();
+
+        // Get data for all tabs
+        $annualSalesData = $this->salesAnnual();
+        $timeDailyData = $this->timeDaily();
+        
+        return Inertia::render('admin/reports', [
+            'activeTab' => $activeTab,
+            'salesDaily' => [
+                'date' => $today,
+                'totalRevenue' => (float) $dailyTotalRevenue,
+                'dailyEarnings' => (float) $dailyEarnings,
+                'transactionCount' => $dailyTransactionCount,
+                'transactions' => $dailyTransactions,
+            ],
+            // Sales - Monthly tab now shows a year-wide monthly breakdown
+            'salesMonthly' => [
+                'year' => now()->format('Y'),
+                'totalRevenue' => (float) $yearlyRevenue,
+                'monthlyEarnings' => (float) $annualEarnings,
+                'transactionCount' => $yearlyTransactionCount,
+                'monthlyTotals' => $monthlyTotalsWithTransactions,
+            ],
+            // Sales - Annual data
+            'salesAnnual' => $annualSalesData,
+            'timeDaily' => $timeDailyData,
+            'timeMonthly' => [
+                'month' => now()->format('F Y'),
+                'totalSessions' => $timeMonthlyTotalSessions,
+                'totalHours' => round($timeMonthlyTotalHours, 2),
+                'uniqueMembers' => $timeMonthlyUniqueMembers,
+                'dailySessions' => $timeMonthlyDailySessions,
+            ],
+            'timeAnnual' => [
+                'year' => now()->format('Y'),
+                'totalSessions' => $timeAnnualTotalSessions,
+                'totalHours' => round($timeAnnualTotalHours, 2),
+                'uniqueMembers' => $timeAnnualUniqueMembers,
+                'monthlySessions' => $timeAnnualMonthlySessions,
+                'topMembers' => $timeAnnualTopMembers,
+            ],
+        ]);
     }
 
     private function salesDaily()
@@ -107,41 +314,39 @@ class ReportsController extends Controller
 
     private function salesAnnual()
     {
-        $startOfYear = now()->startOfYear();
-        $endOfYear = now()->endOfYear();
-
-        $logs = BalanceLog::whereBetween('created_at', [$startOfYear, $endOfYear])
+        // Get all payment transactions with user relationship
+        $allTimeLogs = BalanceLog::with('user')
+            ->where('type', 'mark_paid')
             ->orderBy('created_at')
             ->get();
 
-        // Group by month
-        $monthlyTotals = $logs->groupBy(fn ($log) => $log->created_at->format('Y-m'))
-            ->map(fn ($monthLogs) => [
-                'month' => $monthLogs->first()->created_at->format('M'),
-                'total' => (float) $monthLogs->sum('amount'),
-                'count' => $monthLogs->count(),
-            ])
+        // Group by year and prepare data
+        $annualTotals = $allTimeLogs->groupBy(fn($log) => $log->created_at->format('Y'))
+            ->map(function ($yearLogs, $year) {
+                return [
+                    'year' => $year,
+                    'total' => (float) $yearLogs->sum(fn($log) => abs((float) $log->amount)),
+                    'count' => $yearLogs->count(),
+                    'transactions' => $yearLogs->map(function ($log) {
+                        return [
+                            'time' => $log->created_at->format('Y-m-d H:i'),
+                            'type' => $log->type,
+                            'description' => $log->description,
+                            'member' => $log->user?->name,
+                            'amount' => (float) abs($log->amount),
+                            'balance_after' => (float) $log->balance_after,
+                        ];
+                    })->values(),
+                ];
+            })
+            ->sortByDesc('year')
             ->values();
 
-        $yearlyRevenue = $logs->sum('amount');
-        $transactionCount = $logs->count();
-
-        // Annual earnings from time sessions
-        $annualEarnings = TimeSession::whereBetween('time_in', [$startOfYear, $endOfYear])
-            ->whereNotNull('time_out')
-            ->where('credits_used', '>', 0)
-            ->sum('credits_used');
-
-        return Inertia::render('admin/reports', [
-            'activeTab' => 'sales-annual',
-            'salesAnnual' => [
-                'year' => now()->format('Y'),
-                'totalRevenue' => (float) $yearlyRevenue,
-                'annualEarnings' => (float) $annualEarnings,
-                'transactionCount' => $transactionCount,
-                'monthlyTotals' => $monthlyTotals,
-            ],
-        ]);
+        return [
+            'totalRevenue' => (float) $allTimeLogs->sum(fn($log) => abs((float) $log->amount)),
+            'transactionCount' => $allTimeLogs->count(),
+            'annualTotals' => $annualTotals,
+        ];
     }
 
     private function timeDaily()
@@ -166,16 +371,13 @@ class ReportsController extends Controller
         $activeSessions = $sessions->where('is_active', true)->count();
         $totalHours = $sessions->sum(fn ($s) => $s->getDurationInMinutes() / 60);
 
-        return Inertia::render('admin/reports', [
-            'activeTab' => 'time-daily',
-            'timeDaily' => [
-                'date' => $today,
-                'totalSessions' => $totalSessions,
-                'activeSessions' => $activeSessions,
-                'totalHours' => round($totalHours, 2),
-                'timeLogs' => $timeLogs,
-            ],
-        ]);
+        return [
+            'date' => $today,
+            'totalSessions' => $totalSessions,
+            'activeSessions' => $activeSessions,
+            'totalHours' => round($totalHours, 2),
+            'timeLogs' => $timeLogs,
+        ];
     }
 
     private function timeMonthly()

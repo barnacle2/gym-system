@@ -154,8 +154,12 @@ export default function AdminTimeLogs({ sessions, filters, users }: Props) {
             <Head title="Time Logs" />
             <div className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 text-gray-200">
                 <header className="sticky top-0 z-10 border-b border-gray-700 bg-slate-900/80 p-4 backdrop-blur-sm">
-                    <div className="flex items-center justify-between">
-                        <h1 className="text-xl font-bold tracking-wide">⏱️ Time Logs</h1>
+                    <div className="flex items-center justify-between max-w-7xl mx-auto">
+                        <div className="flex items-center gap-6">
+                            <h1 className="text-lg font-semibold tracking-wide">Fitness Point</h1>
+                            <span className="text-gray-400">|</span>
+                            <h2 className="text-lg font-semibold tracking-wide">⏱️ Time Logs</h2>
+                        </div>
                         <a href="/dashboard" className="cursor-pointer rounded-lg bg-gray-800 px-3 py-1 text-xs text-gray-200 hover:bg-gray-700">
                             ← Back to Dashboard
                         </a>

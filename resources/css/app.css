@@ -141,3 +141,30 @@
         @apply bg-background text-foreground;
     }
 }
+
+@media print {
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    .print-hidden {
+        display: none !important;
+    }
+
+    .print-only {
+        display: block !important;
+    }
+
+    .print-container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 16px !important;
+    }
+}
+
+@media screen {
+    .print-only {
+        display: none;
+    }
+}
