@@ -137,10 +137,33 @@ export default function BalanceManagement({ users, openUserId }: Props) {
 
         const paidUserName = selectedUser.name;
 
+        const selectedTx = transactions.filter((t) => selectedTransactionIds.includes(t.id));
+        let descriptionToSend = (data.description || '').trim();
+
+        // Auto-generate a helpful default description when none is provided
+        if (!descriptionToSend && selectedTx.length > 0) {
+            const types = Array.from(new Set(selectedTx.map((t) => t.type)));
+
+            if (types.length === 1 && types[0] === 'session_fee') {
+                descriptionToSend = 'Daily subscription payment';
+            } else if (types.length === 1 && types[0] === 'purchase') {
+                const productNames = selectedTx
+                    .map((t) => (t.description || ''))
+                    .map((desc) => desc.split('—')[0].trim()) // keep the "Product: ..." part before any notes
+                    .filter(Boolean);
+
+                descriptionToSend = productNames.length > 0
+                    ? productNames.join(', ')
+                    : 'Product payment';
+            } else {
+                descriptionToSend = 'Payment for outstanding balance';
+            }
+        }
+
         router.post(`/admin/users/${selectedUser.id}/balance`, {
             balance: totalSelected,
             action: 'subtract',
-            description: data.description,
+            description: descriptionToSend,
             log_type: 'mark_paid',
         }, {
             onSuccess: () => {
