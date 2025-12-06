@@ -156,7 +156,14 @@ export default function AdminTimeLogs({ sessions, filters, users }: Props) {
                 <header className="sticky top-0 z-10 border-b border-gray-700 bg-slate-900/80 p-4 backdrop-blur-sm">
                     <div className="flex items-center justify-between max-w-7xl mx-auto">
                         <div className="flex items-center gap-6">
-                            <h1 className="text-lg font-semibold tracking-wide">Fitness Point</h1>
+                            <div className="flex items-center gap-2">
+                                <img
+                                    src="/fp-logo.png"
+                                    alt="Fitness Point logo"
+                                    className="h-9 w-9 object-contain"
+                                />
+                                <h1 className="text-lg font-semibold tracking-wide">Fitness Point</h1>
+                            </div>
                             <span className="text-gray-400">|</span>
                             <h2 className="text-lg font-semibold tracking-wide">⏱️ Time Logs</h2>
                         </div>

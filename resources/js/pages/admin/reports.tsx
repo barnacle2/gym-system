@@ -744,7 +744,14 @@ export default function Reports() {
         <header className="sticky top-0 z-10 border-b border-gray-700 bg-slate-900/80 p-4 backdrop-blur-sm print-hidden">
           <div className="flex items-center justify-between max-w-7xl mx-auto">
             <div className="flex items-center gap-6">
-              <h1 className="text-lg font-semibold tracking-wide">Fitness Point</h1>
+              <div className="flex items-center gap-2">
+                <img
+                  src="/fp-logo.png"
+                  alt="Fitness Point logo"
+                  className="h-9 w-9 object-contain"
+                />
+                <h1 className="text-lg font-semibold tracking-wide">Fitness Point</h1>
+              </div>
               <span className="text-gray-400">|</span>
               <h2 className="text-lg font-semibold tracking-wide">Reports</h2>
             </div>
@@ -777,11 +784,11 @@ export default function Reports() {
           {/* Print Header */}
           <div className="mb-6 print-only">
             <div className="text-center">
-              <div className="text-xl font-bold text-gray-900">Fitness Point</div>
-              <div className="text-xs text-gray-600 mb-1">4th Floor, RCBC Building, San Nicolas Street corner Burgos Street,<br />Surigao City, Surigao del Norte</div>
-              <div className="mt-1 text-sm font-semibold text-gray-800">Reports</div>
+              <div className="text-xl font-bold text-black">Fitness Point</div>
+              <div className="text-xs text-black mb-1">4th Floor, RCBC Building, San Nicolas Street corner Burgos Street,<br />Surigao City, Surigao del Norte</div>
+              <div className="mt-1 text-sm font-semibold text-black">Reports</div>
               {getReportSubtitle() && (
-                <div className="text-xs text-gray-600">{getReportSubtitle()}</div>
+                <div className="text-xs text-black">{getReportSubtitle()}</div>
               )}
             </div>
           </div>
@@ -822,15 +829,15 @@ export default function Reports() {
             {/* Sales Reports (Daily / Monthly / Annual) */}
             {printMode !== 'time' && props.salesAnnual && (
               <section>
-                <h2 className="mb-2 text-base font-semibold text-gray-900">All-Time Sales Report</h2>
-                <table className="mb-3 w-full border-collapse text-[11px]">
+                <h2 className="mb-2 text-base font-semibold text-black">All-Time Sales Report</h2>
+                <table className="mb-3 w-full border-collapse text-[11px] text-black">
                   <tbody>
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-medium text-gray-700">Total Revenue</td>
+                      <td className="border border-gray-300 px-2 py-1 font-medium text-black">Total Revenue</td>
                       <td className="border border-gray-300 px-2 py-1">{formatCurrency(props.salesAnnual.totalRevenue)}</td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-medium text-gray-700">Total Transactions</td>
+                      <td className="border border-gray-300 px-2 py-1 font-medium text-black">Total Transactions</td>
                       <td className="border border-gray-300 px-2 py-1">{props.salesAnnual.transactionCount}</td>
                     </tr>
                   </tbody>
@@ -838,14 +845,14 @@ export default function Reports() {
 
                 {props.salesAnnual.annualTotals.flatMap(year => year.transactions).length > 0 && (
                   <div className="mt-2">
-                    <h3 className="mb-1 text-[11px] font-semibold text-gray-800">All Transactions</h3>
-                    <table className="w-full border-collapse text-[10px]">
+                    <h3 className="mb-1 text-[11px] font-semibold text-black">All Transactions</h3>
+                    <table className="w-full border-collapse text-[10px] text-black">
                       <thead>
                         <tr>
-                          <th className="border border-gray-300 px-1 py-1 text-left text-gray-700">Date & Time</th>
-                          <th className="border border-gray-300 px-1 py-1 text-left text-gray-700">Member</th>
-                          <th className="border border-gray-300 px-1 py-1 text-left text-gray-700">Description</th>
-                          <th className="border border-gray-300 px-1 py-1 text-right text-gray-700">Amount</th>
+                          <th className="border border-gray-300 px-1 py-1 text-left text-black">Date & Time</th>
+                          <th className="border border-gray-300 px-1 py-1 text-left text-black">Member</th>
+                          <th className="border border-gray-300 px-1 py-1 text-left text-black">Description</th>
+                          <th className="border border-gray-300 px-1 py-1 text-right text-black">Amount</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -868,11 +875,11 @@ export default function Reports() {
 
             {printMode !== 'time' && props.salesMonthly && (
               <section>
-                <h2 className="mb-2 text-base font-semibold text-gray-900">Monthly Sales Report</h2>
-                <table className="mb-3 w-full border-collapse text-[11px]">
+                <h2 className="mb-2 text-base font-semibold text-black">Monthly Sales Report</h2>
+                <table className="mb-3 w-full border-collapse text-[11px] text-black">
                   <tbody>
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-medium text-gray-700">Year</td>
+                      <td className="border border-gray-300 px-2 py-1 font-medium text-black">Year</td>
                       <td className="border border-gray-300 px-2 py-1">{props.salesMonthly.year}</td>
                     </tr>
                     <tr>
@@ -880,11 +887,11 @@ export default function Reports() {
                       <td className="border border-gray-300 px-2 py-1">{formatCurrency(props.salesMonthly.totalRevenue)}</td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-medium text-gray-700">Time In Earnings (for daily subscription customers)</td>
+                      <td className="border border-gray-300 px-2 py-1 font-medium text-black">Time In Earnings (for daily subscription customers)</td>
                       <td className="border border-gray-300 px-2 py-1">{formatCurrency(props.salesMonthly.monthlyEarnings)}</td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-medium text-gray-700">Transactions</td>
+                      <td className="border border-gray-300 px-2 py-1 font-medium text-black">Transactions</td>
                       <td className="border border-gray-300 px-2 py-1">{props.salesMonthly.transactionCount}</td>
                     </tr>
                   </tbody>
@@ -894,8 +901,8 @@ export default function Reports() {
 
             {printMode !== 'time' && props.salesAnnual && (
               <section>
-                <h2 className="mb-2 text-base font-semibold text-gray-900">Annual Sales Report</h2>
-                <table className="mb-3 w-full border-collapse text-[11px]">
+                <h2 className="mb-2 text-base font-semibold text-black">Annual Sales Report</h2>
+                <table className="mb-3 w-full border-collapse text-[11px] text-black">
                   <tbody>
                     <tr>
                       <td className="border border-gray-300 px-2 py-1 font-medium text-gray-700">Total Revenue</td>
@@ -908,8 +915,8 @@ export default function Reports() {
                   </tbody>
                 </table>
 
-                <h3 className="mb-1 text-sm font-semibold text-gray-900">Annual Breakdown</h3>
-                <table className="w-full border-collapse text-[11px] mb-4">
+                <h3 className="mb-1 text-sm font-semibold text-black">Annual Breakdown</h3>
+                <table className="w-full border-collapse text-[11px] mb-4 text-black">
                   <thead>
                     <tr>
                       <th className="border border-gray-300 px-2 py-1 bg-gray-100 text-left">Year</th>
@@ -934,19 +941,19 @@ export default function Reports() {
             {printMode === 'time' && props.timeAnnual && (
               <section className="space-y-6">
                 <div>
-                  <h2 className="mb-2 text-base font-semibold text-gray-900">Gym Usage Summary</h2>
-                  <table className="mb-3 w-full border-collapse text-[11px]">
+                  <h2 className="mb-2 text-base font-semibold text-black">Gym Usage Summary</h2>
+                  <table className="mb-3 w-full border-collapse text-[11px] text-black">
                     <tbody>
                       <tr>
-                        <td className="border border-gray-300 px-2 py-1 font-medium text-gray-700">Total Sessions (All Time)</td>
+                        <td className="border border-gray-300 px-2 py-1 font-medium text-black">Total Sessions (All Time)</td>
                         <td className="border border-gray-300 px-2 py-1">{props.timeAnnual.totalSessions}</td>
                       </tr>
                       <tr>
-                        <td className="border border-gray-300 px-2 py-1 font-medium text-gray-700">Total Hours Logged</td>
+                        <td className="border border-gray-300 px-2 py-1 font-medium text-black">Total Hours Logged</td>
                         <td className="border border-gray-300 px-2 py-1">{props.timeAnnual.totalHours} hours</td>
                       </tr>
                       <tr>
-                        <td className="border border-gray-300 px-2 py-1 font-medium text-gray-700">Unique Members</td>
+                        <td className="border border-gray-300 px-2 py-1 font-medium text-black">Unique Members</td>
                         <td className="border border-gray-300 px-2 py-1">{props.timeAnnual.uniqueMembers}</td>
                       </tr>
                     </tbody>
@@ -954,8 +961,8 @@ export default function Reports() {
                 </div>
 
                 <div>
-                  <h3 className="mb-2 text-sm font-semibold text-gray-900">Top Members by Usage</h3>
-                  <table className="w-full border-collapse text-[11px] mb-6">
+                  <h3 className="mb-2 text-sm font-semibold text-black">Top Members by Usage</h3>
+                  <table className="w-full border-collapse text-[11px] mb-6 text-black">
                     <thead>
                       <tr>
                         <th className="border border-gray-300 px-2 py-1 bg-gray-100 text-left">Member</th>
@@ -976,8 +983,8 @@ export default function Reports() {
                 </div>
 
                 <div>
-                  <h3 className="mb-2 text-sm font-semibold text-gray-900">Monthly Activity</h3>
-                  <table className="w-full border-collapse text-[11px] mb-6">
+                  <h3 className="mb-2 text-sm font-semibold text-black">Monthly Activity</h3>
+                  <table className="w-full border-collapse text-[11px] mb-6 text-black">
                     <thead>
                       <tr>
                         <th className="border border-gray-300 px-2 py-1 bg-gray-100 text-left">Month</th>
@@ -1005,23 +1012,23 @@ export default function Reports() {
 
             {printMode === 'time' && props.timeDaily && (
               <section>
-                <h2 className="mb-2 text-base font-semibold text-gray-900">Daily Time Logs Report</h2>
-                <table className="mb-3 w-full border-collapse text-[11px]">
+                <h2 className="mb-2 text-base font-semibold text-black">Daily Time Logs Report</h2>
+                <table className="mb-3 w-full border-collapse text-[11px] text-black">
                   <tbody>
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-medium text-gray-700">Date</td>
+                      <td className="border border-gray-300 px-2 py-1 font-medium text-black">Date</td>
                       <td className="border border-gray-300 px-2 py-1">{props.timeDaily.date}</td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-medium text-gray-700">Total Sessions</td>
+                      <td className="border border-gray-300 px-2 py-1 font-medium text-black">Total Sessions</td>
                       <td className="border border-gray-300 px-2 py-1">{props.timeDaily.totalSessions}</td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-medium text-gray-700">Active Sessions</td>
+                      <td className="border border-gray-300 px-2 py-1 font-medium text-black">Active Sessions</td>
                       <td className="border border-gray-300 px-2 py-1">{props.timeDaily.activeSessions}</td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-medium text-gray-700">Total Hours</td>
+                      <td className="border border-gray-300 px-2 py-1 font-medium text-black">Total Hours</td>
                       <td className="border border-gray-300 px-2 py-1">{props.timeDaily.totalHours}</td>
                     </tr>
                   </tbody>
@@ -1029,8 +1036,8 @@ export default function Reports() {
 
                 {props.timeDaily.timeLogs.length > 0 && (
                   <div className="mt-2">
-                    <h3 className="mb-1 text-[11px] font-semibold text-gray-800">Time Log Details</h3>
-                    <table className="w-full border-collapse text-[10px]">
+                    <h3 className="mb-1 text-[11px] font-semibold text-black">Time Log Details</h3>
+                    <table className="w-full border-collapse text-[10px] text-black">
                       <thead>
                         <tr>
                           <th className="border border-gray-300 px-1 py-1 text-left text-gray-700">Member</th>

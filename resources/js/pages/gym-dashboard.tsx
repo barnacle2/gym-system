@@ -379,7 +379,14 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
                     <div className="mx-auto flex max-w-7xl items-center justify-between">
                         <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-3">
-                                <h1 className="text-xl font-semibold tracking-wide">Fitness Point Dashboard</h1>
+                                <div className="flex items-center gap-2">
+                                    <img
+                                        src="/fp-logo.png"
+                                        alt="Fitness Point logo"
+                                        className="h-10 w-10 object-contain"
+                                    />
+                                    <h1 className="text-xl font-semibold tracking-wide">Fitness Point Dashboard</h1>
+                                </div>
                                 <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-0.5 text-xs font-medium text-emerald-300 border border-emerald-500/25">
                                     Admin View
                                 </span>
