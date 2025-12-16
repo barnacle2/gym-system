@@ -30,7 +30,8 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                 <div className="w-full max-w-md">
                     {/* Header */}
                     <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold tracking-wide mb-2">🏋️ Fitness Point</h1>
+                        <img src="/fp-logo.png" alt="Fitness Point Logo" className="h-16 mx-auto mb-4" />
+                        <h1 className="text-3xl font-bold tracking-wide mb-2">Fitness Point</h1>
                         <p className="text-gray-400">Welcome back! Please sign in to your account.</p>
                     </div>
 
