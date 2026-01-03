@@ -421,7 +421,7 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
                                 onClick={handleLogout}
                                 className="cursor-pointer px-4 py-2 rounded-full bg-slate-800 text-gray-300 text-sm font-medium hover:bg-red-500 hover:text-white hover:border-red-600 transition-all ml-2"
                             >
-                                Exit
+                                Logout
                             </button>
                         </nav>
 

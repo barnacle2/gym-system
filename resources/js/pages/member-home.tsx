@@ -502,17 +502,23 @@ export default function MemberHome({ member, user, activeMembersCount, timeTrack
                                             Private QR - Do not share
                                         </div>
                                         <button
-                                            onClick={() => setShowQRModal(true)}
-                                            className="w-full mt-2 py-2.5 rounded-lg bg-blue-600/10 text-blue-400 border border-blue-500/20 text-[11px] sm:text-xs font-semibold hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-2"
+                                            onClick={() => {
+                                                setShowQRModal(true);
+                                                setTimeout(() => window.print(), 500);
+                                            }}
+                                            className="cursor-pointer w-full mt-2 py-2.5 rounded-lg bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 text-[11px] sm:text-xs font-semibold hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center gap-2"
                                         >
-                                            <span className="text-sm">🔍</span> Click to enlarge & Print
+                                            <span className="text-sm">🖨️</span> ENLARGE & PRINT QR
                                         </button>
                                     </div>
                                 </div>
-                                <div className="flex-shrink-0 w-full lg:w-auto flex justify-center mt-2 lg:mt-0">
+                                <div className="flex-shrink-0 w-full lg:w-auto flex flex-col items-center gap-3 mt-2 lg:mt-0">
                                     <div
                                         className="cursor-pointer rounded-2xl border border-slate-700 bg-white p-4 shadow-xl transition-transform hover:scale-[1.02]"
-                                        onClick={() => setShowQRModal(true)}
+                                        onClick={() => {
+                                            setShowQRModal(true);
+                                            setTimeout(() => window.print(), 500);
+                                        }}
                                     >
                                         <div
                                             dangerouslySetInnerHTML={{
