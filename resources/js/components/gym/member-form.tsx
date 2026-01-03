@@ -1,6 +1,6 @@
 import React from 'react';
 
-type Plan = 'Daily' | 'Monthly' | 'Quarterly' | 'Semi-Annual' | 'Annual';
+type Plan = 'Daily' | 'Monthly';
 
 export interface Member {
   id: string;
@@ -90,16 +90,16 @@ export default function MemberForm({ formData, setFormData, isEditing, resetForm
                 onChange={(e) => {
                   // Get the raw input value
                   let input = e.target.value;
-                  
+
                   // If the user is deleting characters, allow it without reformatting
                   if (input.length < formData.phone.length) {
                     setFormData(prev => ({ ...prev, phone: input }));
                     return;
                   }
-                  
+
                   // Remove all non-digit characters
                   const digits = input.replace(/\D/g, '');
-                  
+
                   // Only format if we have a valid length
                   if (digits.length === 0) {
                     setFormData(prev => ({ ...prev, phone: '' }));
@@ -144,15 +144,12 @@ export default function MemberForm({ formData, setFormData, isEditing, resetForm
                     const startDate = prev.startDate ? new Date(prev.startDate) : new Date();
                     const monthsMap = {
                       'Daily': 0,
-                      'Monthly': 1,
-                      'Quarterly': 3,
-                      'Semi-Annual': 6,
-                      'Annual': 12
+                      'Monthly': 1
                     };
-                    
+
                     const months = monthsMap[plan] || 1;
                     let newEndDate = new Date(startDate);
-                    
+
                     if (months > 0) {
                       const day = startDate.getDate();
                       newEndDate.setMonth(startDate.getMonth() + months);
@@ -160,7 +157,7 @@ export default function MemberForm({ formData, setFormData, isEditing, resetForm
                         newEndDate.setDate(0); // Set to last day of previous month
                       }
                     }
-                    
+
                     return {
                       ...prev,
                       plan,
@@ -172,9 +169,6 @@ export default function MemberForm({ formData, setFormData, isEditing, resetForm
               >
                 <option value="Daily">Daily</option>
                 <option value="Monthly">Monthly</option>
-                <option value="Quarterly">Quarterly</option>
-                <option value="Semi-Annual">Semi-Annual</option>
-                <option value="Annual">Annual</option>
               </select>
             </div>
             <div>
@@ -191,15 +185,12 @@ export default function MemberForm({ formData, setFormData, isEditing, resetForm
                       const plan = prev.plan;
                       const monthsMap = {
                         'Daily': 0,
-                        'Monthly': 1,
-                        'Quarterly': 3,
-                        'Semi-Annual': 6,
-                        'Annual': 12
+                        'Monthly': 1
                       };
-                      
+
                       const months = monthsMap[plan] || 1;
                       let newEndDate = new Date(startDate);
-                      
+
                       if (months > 0) {
                         const day = startDate.getDate();
                         newEndDate.setMonth(startDate.getMonth() + months);
@@ -207,14 +198,14 @@ export default function MemberForm({ formData, setFormData, isEditing, resetForm
                           newEndDate.setDate(0); // Set to last day of previous month
                         }
                       }
-                      
+
                       return {
                         ...prev,
                         startDate: newStartDate,
                         endDate: months > 0 ? newEndDate.toISOString().split('T')[0] : prev.endDate
                       };
                     }
-                    
+
                     return {
                       ...prev,
                       startDate: newStartDate
@@ -233,8 +224,14 @@ export default function MemberForm({ formData, setFormData, isEditing, resetForm
               <input
                 type="date"
                 value={formData.endDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
-                className="w-full p-3 bg-slate-950 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:border-blue-500 [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-100"
+                readOnly={formData.plan === 'Monthly'}
+                onChange={(e) => {
+                  if (formData.plan !== 'Monthly') {
+                    setFormData(prev => ({ ...prev, endDate: e.target.value }))
+                  }
+                }}
+                className={`w-full p-3 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:border-blue-500 [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-100 ${formData.plan === 'Monthly' ? 'bg-slate-900/50 text-gray-500 cursor-not-allowed' : 'bg-slate-950'
+                  }`}
               />
             </div>
             <div>

@@ -116,6 +116,21 @@ class DashboardController extends Controller
                 'balance' => $initialBalance,
             ]);
 
+            // For Monthly plan, automatically record the payment to zero out the balance
+            if ($planEnum === MembershipPlan::MONTHLY) {
+                // Record the "Initial Fee" implicitly via the initial balance, now record the Payment
+                $paymentAmount = 400.00;
+                $user->deductBalance($paymentAmount);
+
+                BalanceLog::create([
+                    'user_id' => $user->id,
+                    'amount' => -$paymentAmount,
+                    'balance_after' => $user->balance,
+                    'type' => 'mark_paid',
+                    'description' => 'Initial Membership Fee Payment (Auto-paid)',
+                ]);
+            }
+
             // Send password reset link so user can set their own password
             $status = Password::sendResetLink(['email' => $user->email]);
 
@@ -194,6 +209,33 @@ class DashboardController extends Controller
     public function renew(Member $member)
     {
         $member->renew();
+
+        // Auto-pay for Monthly renewals
+        if ($member->plan === \App\Enums\MembershipPlan::MONTHLY && $member->user) {
+            $amount = 400.00;
+            $user = $member->user;
+
+            // 1. Charge the renewal fee
+            $user->addBalance($amount);
+            BalanceLog::create([
+                'user_id' => $user->id,
+                'amount' => $amount,
+                'balance_after' => $user->balance,
+                'type' => 'renewal_fee',
+                'description' => 'Monthly Renewal Fee',
+            ]);
+
+            // 2. Automatically pay it
+            $user->deductBalance($amount);
+            BalanceLog::create([
+                'user_id' => $user->id,
+                'amount' => -$amount,
+                'balance_after' => $user->balance,
+                'type' => 'mark_paid',
+                'description' => 'Renewal Payment (Auto-paid)',
+            ]);
+        }
+
         return redirect()->back();
     }
 

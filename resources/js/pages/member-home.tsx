@@ -38,11 +38,12 @@ interface BalanceLogEntry {
 interface Props {
     member: Member | null;
     user: User;
+    activeMembersCount: number;
     timeTracking: TimeTracking;
     balanceLogs: BalanceLogEntry[];
 }
 
-export default function MemberHome({ member, user, timeTracking, balanceLogs }: Props) {
+export default function MemberHome({ member, user, activeMembersCount, timeTracking, balanceLogs }: Props) {
     const { post } = useForm();
     const [showQRModal, setShowQRModal] = useState(false);
     const [toggling, setToggling] = useState(false);
@@ -58,7 +59,7 @@ export default function MemberHome({ member, user, timeTracking, balanceLogs }: 
     const handleLogout = (e: React.FormEvent) => {
         e.preventDefault();
         post('/logout');
-    };    if (!member) {
+    }; if (!member) {
         return (
             <>
                 <Head title="Member Home" />
@@ -180,7 +181,7 @@ export default function MemberHome({ member, user, timeTracking, balanceLogs }: 
                 } else {
                     setActiveSession(null);
                 }
-            } catch {}
+            } catch { }
         };
 
         // initial fetch and interval
@@ -257,8 +258,8 @@ export default function MemberHome({ member, user, timeTracking, balanceLogs }: 
                                         ${alert.type === 'danger'
                                             ? 'border-red-700/60 bg-red-900/40 text-red-100'
                                             : alert.type === 'warning'
-                                            ? 'border-amber-600/60 bg-amber-900/30 text-amber-100'
-                                            : 'border-blue-700/60 bg-blue-900/40 text-blue-100'
+                                                ? 'border-amber-600/60 bg-amber-900/30 text-amber-100'
+                                                : 'border-blue-700/60 bg-blue-900/40 text-blue-100'
                                         }`}
                                 >
                                     <span className="mt-0.5 text-lg">
@@ -369,9 +370,8 @@ export default function MemberHome({ member, user, timeTracking, balanceLogs }: 
                             </form>
                             <div className="mb-4 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className={`flex h-10 w-10 items-center justify-center rounded-full border ${
-                                        'bg-green-500/10 border-green-500/20'
-                                    }`}>
+                                    <div className={`flex h-10 w-10 items-center justify-center rounded-full border ${'bg-green-500/10 border-green-500/20'
+                                        }`}>
                                         <span className={`text-lg text-green-400`}>⏱️</span>
                                     </div>
                                     <h3 className="text-lg font-semibold text-gray-200">Session Tracker</h3>
@@ -381,50 +381,34 @@ export default function MemberHome({ member, user, timeTracking, balanceLogs }: 
 
 
 
-                            {/* Time Tracking Status */}
-                            {activeSession && (
-                                <div className="mb-4 rounded-lg bg-blue-500/10 border border-blue-500/20 p-4">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse"></div>
-                                            <span className="text-blue-300 font-medium">Session Active</span>
+                            {/* Gym Occupancy Indicator */}
+                            <div className="mb-4 rounded-lg bg-slate-900/50 border border-slate-700 p-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/20 text-blue-400">
+                                            👥
                                         </div>
-                                        <div className="text-right">
-                                            <div className="text-blue-300 font-bold">
-                                                {activeSession.duration}
-                                            </div>
-                                            <div className="text-xs text-blue-400">
-                                                Started at {activeSession.time_in}
+                                        <div>
+                                            <div className="text-sm font-medium text-gray-400">Current Gym Occupancy</div>
+                                            <div className="text-xl font-bold text-white">
+                                                {activeMembersCount} <span className="text-sm font-normal text-gray-500">people active now</span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="mt-3">
-                                        <button
-                                            onClick={handleToggleTimeTracking}
-                                            disabled={toggling}
-                                            className="cursor-pointer px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-50"
-                                        >
-                                            {toggling ? 'Timing out…' : 'Time Out Now'}
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
 
-                            {/* Time In button when no active session */}
-                            {!activeSession && (
-                                <div className="mb-4 rounded-lg bg-green-500/10 border border-green-500/20 p-4">
-                                    <div className="flex items-center justify-between">
-                                        <div className="text-green-300 font-medium">Ready to start a session?</div>
-                                        <button
-                                            onClick={handleToggleTimeTracking}
-                                            disabled={toggling}
-                                            className="cursor-pointer px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 disabled:opacity-50"
-                                        >
-                                            {toggling ? 'Timing in…' : 'Time In Now'}
-                                        </button>
-                                    </div>
+                                    {activeSession && (
+                                        <div className="text-right">
+                                            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400 border border-emerald-500/20">
+                                                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
+                                                You are timed in
+                                            </div>
+                                            <div className="mt-1 text-xs text-gray-400">
+                                                {activeSession.duration} • Since {activeSession.time_in}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
+                            </div>
 
                             {/* No balance widget in subscription model */}
 
@@ -467,9 +451,9 @@ export default function MemberHome({ member, user, timeTracking, balanceLogs }: 
                                             • {timeTracking.active_session
                                                 ? '🔴 Ready to TIME OUT - End your session'
                                                 : '🟢 Ready to TIME IN - Start your session'}
-                                            
+
                                         </div>
-                                        
+
                                         <div>
                                             • Valid until{' '}
                                             {formatDate(member.endDate)}
@@ -524,7 +508,7 @@ export default function MemberHome({ member, user, timeTracking, balanceLogs }: 
                         </div>
                     )}
 
-                    
+
 
                     {/* Quick Actions */}
                     <div className="rounded-2xl border border-gray-700 bg-gray-800/80 p-6">

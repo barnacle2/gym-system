@@ -29,7 +29,7 @@ class MemberController extends Controller
             $all = collect(Storage::disk('public')->allFiles($dir))
                 ->filter(function ($path) {
                     $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-                    return in_array($ext, ['jpg','jpeg','png','gif','webp']);
+                    return in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
                 })
                 ->sortByDesc(function ($path) {
                     $full = storage_path('app/public/' . $path);
@@ -104,8 +104,11 @@ class MemberController extends Controller
                 ];
             });
 
+        $activeMembersCount = \App\Models\TimeSession::where('is_active', true)->count();
+
         return Inertia::render('member-home', [
             'member' => $memberData,
+            'activeMembersCount' => $activeMembersCount,
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -412,7 +415,7 @@ class MemberController extends Controller
         $all = collect(Storage::disk('public')->allFiles($dir))
             ->filter(function ($path) {
                 $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-                return in_array($ext, ['jpg','jpeg','png','gif','webp']);
+                return in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
             })
             ->sortByDesc(function ($path) {
                 $full = storage_path('app/public/' . $path);
@@ -445,7 +448,7 @@ class MemberController extends Controller
                     : optional($member->end_date)->format('F d, Y'),
                 'phone' => $member->phone,
                 'notes' => $member->notes,
-                'renewals' => (int)($member->renewals ?? 0),
+                'renewals' => (int) ($member->renewals ?? 0),
                 'status' => $member->status,
             ] : null,
             'avatarUrl' => $avatarUrl,

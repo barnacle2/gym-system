@@ -219,7 +219,7 @@ export default function Reports() {
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-100">Daily Sales Report</h3>
             <p className="text-xs text-gray-400">Revenue from transactions and daily member earnings for {props.salesDaily?.date}.</p>
-            
+
             {props.salesDaily && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -252,16 +252,16 @@ export default function Reports() {
                       <tbody>
                         {Array.isArray(props.salesDaily.transactions) &&
                           props.salesDaily.transactions.map((tx, i) => (
-                          <tr key={i} className="border-b border-slate-800">
-                            <td className="p-2 whitespace-nowrap">
-                              {props.salesDaily?.date
-                                ? `${props.salesDaily.date} ${formatDateTime(tx.time)}`
-                                : formatDateTime(tx.time)}
-                            </td>
-                            <td className="p-2">{tx.member ?? '—'}</td>
-                            <td className="p-2">{tx.description}</td>
-                            <td className="p-2 text-right">{formatCurrency(tx.amount)}</td>
-                          </tr>
+                            <tr key={i} className="border-b border-slate-800">
+                              <td className="p-2 whitespace-nowrap">
+                                {props.salesDaily?.date
+                                  ? `${props.salesDaily.date} ${formatDateTime(tx.time)}`
+                                  : formatDateTime(tx.time)}
+                              </td>
+                              <td className="p-2">{tx.member ?? '—'}</td>
+                              <td className="p-2">{tx.description}</td>
+                              <td className="p-2 text-right">{formatCurrency(tx.amount)}</td>
+                            </tr>
                           ))}
                       </tbody>
                     </table>
@@ -276,7 +276,7 @@ export default function Reports() {
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-100">Monthly Sales Report</h3>
             <p className="text-xs text-gray-400">Revenue and transactions for {props.salesMonthly?.year}.</p>
-            
+
             {props.salesMonthly && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -436,7 +436,7 @@ export default function Reports() {
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-100">Daily Time Logs Report</h3>
             <p className="text-xs text-gray-400">Member check-ins and usage for {props.timeDaily?.date}.</p>
-            
+
             {props.timeDaily && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -477,11 +477,10 @@ export default function Reports() {
                             <td className="p-2">{log.duration}</td>
                             <td className="p-2 text-right">{log.credits_used}</td>
                             <td className="p-2 text-center">
-                              <span className={`px-2 py-0.5 rounded-full text-[10px] ${
-                                log.is_active 
-                                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                                  : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                              }`}>
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] ${log.is_active
+                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                }`}>
                                 {log.is_active ? 'Active' : 'Closed'}
                               </span>
                             </td>
@@ -570,11 +569,10 @@ export default function Reports() {
                                       <td className="p-2 text-right">{log.credits_used}</td>
                                       <td className="p-2 text-center">
                                         <span
-                                          className={`px-2 py-0.5 rounded-full text-[10px] ${
-                                            log.is_active
-                                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                                              : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                                          }`}
+                                          className={`px-2 py-0.5 rounded-full text-[10px] ${log.is_active
+                                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                            : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                            }`}
                                         >
                                           {log.is_active ? 'Active' : 'Closed'}
                                         </span>
@@ -599,7 +597,7 @@ export default function Reports() {
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-100">Annual Time Logs Report</h3>
             <p className="text-xs text-gray-400">Member activity and usage for {props.timeAnnual?.year}.</p>
-            
+
             {props.timeAnnual && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -665,11 +663,10 @@ export default function Reports() {
                                         <td className="p-2 text-right">{log.credits_used}</td>
                                         <td className="p-2 text-center">
                                           <span
-                                            className={`px-2 py-0.5 rounded-full text-[10px] ${
-                                              log.is_active
-                                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                                                : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                                            }`}
+                                            className={`px-2 py-0.5 rounded-full text-[10px] ${log.is_active
+                                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                              : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                              }`}
                                           >
                                             {log.is_active ? 'Active' : 'Closed'}
                                           </span>
@@ -713,7 +710,7 @@ export default function Reports() {
   // Format time string to 12-hour format with AM/PM
   const formatDateTime = (timeString: string | undefined) => {
     if (!timeString) return 'N/A';
-    
+
     try {
       // If it's already in HH:MM:SS format
       const timeParts = timeString.split(':');
@@ -721,16 +718,16 @@ export default function Reports() {
         let hours = parseInt(timeParts[0], 10);
         const minutes = timeParts[1];
         const ampm = hours >= 12 ? 'PM' : 'AM';
-        
+
         // Convert to 12-hour format
         hours = hours % 12;
         hours = hours ? hours : 12; // Convert 0 to 12 for 12 AM
-        
+
         return `${hours}:${minutes} ${ampm}`;
       }
-      
+
       return timeString; // Return original if format doesn't match
-    
+
     } catch (error) {
       console.error('Error formatting time:', error);
       return timeString; // Return original string if parsing fails
@@ -807,11 +804,10 @@ export default function Reports() {
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
-                  className={`px-4 py-2 text-xs font-medium rounded-t-lg transition-colors ${
-                    activeTab === tab.id
-                      ? 'bg-slate-800 text-blue-300 border border-slate-600 border-b-0'
-                      : 'text-gray-400 hover:text-gray-200 hover:bg-slate-800/60'
-                  }`}
+                  className={`px-4 py-2 text-xs font-medium rounded-t-lg transition-colors ${activeTab === tab.id
+                    ? 'bg-slate-800 text-blue-300 border border-slate-600 border-b-0'
+                    : 'text-gray-400 hover:text-gray-200 hover:bg-slate-800/60'
+                    }`}
                 >
                   {tab.label}
                 </button>
@@ -856,7 +852,7 @@ export default function Reports() {
                         </tr>
                       </thead>
                       <tbody>
-                        {props.salesAnnual.annualTotals.flatMap(year => 
+                        {props.salesAnnual.annualTotals.flatMap(year =>
                           year.transactions.map((tx, i) => (
                             <tr key={`${year.year}-${i}`}>
                               <td className="border border-gray-300 px-1 py-0.5 align-top">{tx.time}</td>
@@ -915,25 +911,6 @@ export default function Reports() {
                   </tbody>
                 </table>
 
-                <h3 className="mb-1 text-sm font-semibold text-black">Annual Breakdown</h3>
-                <table className="w-full border-collapse text-[11px] mb-4 text-black">
-                  <thead>
-                    <tr>
-                      <th className="border border-gray-300 px-2 py-1 bg-gray-100 text-left">Year</th>
-                      <th className="border border-gray-300 px-2 py-1 bg-gray-100 text-right">Total</th>
-                      <th className="border border-gray-300 px-2 py-1 bg-gray-100 text-right">Transactions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {props.salesAnnual.annualTotals.map((yearData, i) => (
-                      <tr key={i}>
-                        <td className="border border-gray-300 px-2 py-1">{yearData.year}</td>
-                        <td className="border border-gray-300 px-2 py-1 text-right">{formatCurrency(yearData.total)}</td>
-                        <td className="border border-gray-300 px-2 py-1 text-right">{yearData.count}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
               </section>
             )}
 
@@ -1113,9 +1090,9 @@ export default function Reports() {
                 </table>
               </section>
             )}
-          </div>
-        </main>
-      </div>
+          </div >
+        </main >
+      </div >
     </>
   );
 }

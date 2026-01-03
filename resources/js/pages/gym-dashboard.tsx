@@ -9,7 +9,7 @@ interface Member {
     fullName: string;
     email: string;
     phone: string;
-    plan: 'Daily' | 'Monthly' | 'Quarterly' | 'Semi-Annual' | 'Annual';
+    plan: 'Daily' | 'Monthly';
     startDate: string;
     endDate: string;
     notes: string;
@@ -73,7 +73,7 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
     const [isDeactivating, setIsDeactivating] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
-    const [memberToDelete, setMemberToDelete] = useState<{id: string, name: string} | null>(null);
+    const [memberToDelete, setMemberToDelete] = useState<{ id: string, name: string } | null>(null);
     const [deletedMemberName, setDeletedMemberName] = useState('');
     const [lastEditedId, setLastEditedId] = useState<string | null>(null);
     const [pendingScrollToNew, setPendingScrollToNew] = useState(false);
@@ -109,10 +109,7 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
         const start = new Date(startDate);
         const monthsMap: Record<string, number> = {
             'Daily': 0,
-            'Monthly': 1,
-            'Quarterly': 3,
-            'Semi-Annual': 6,
-            'Annual': 12
+            'Monthly': 1
         };
         const months = monthsMap[plan] || 1;
         if (months === 0) {
@@ -283,14 +280,14 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
             if (row) {
                 // First, scroll to the top of the page to ensure we can scroll down to the member
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-                
+
                 // Then scroll to the member row
                 setTimeout(() => {
                     row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
+
                     // Add a highlight effect
                     row.classList.add('bg-blue-500/10', 'transition-colors', 'duration-1000');
-                    
+
                     // Remove the highlight after 2 seconds
                     setTimeout(() => {
                         row.classList.remove('bg-blue-500/10');
@@ -306,8 +303,8 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
             setDeactivatedMemberName(member.fullName);
             setLastEditedId(id);
             setIsDeactivating(!member.inactive);
-            
-            router.patch(`/members/${id}/toggle-status`, {}, { 
+
+            router.patch(`/members/${id}/toggle-status`, {}, {
                 preserveScroll: true,
                 onSuccess: () => {
                     setShowDeactivateSuccess(true);
@@ -347,9 +344,9 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
 
     const confirmDelete = () => {
         if (!memberToDelete) return;
-        
+
         setDeletedMemberName(memberToDelete.name);
-        
+
         router.delete(`/members/${memberToDelete.id}`, {
             onSuccess: () => {
                 setShowDeleteConfirm(false);
@@ -362,7 +359,7 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
             preserveScroll: true
         });
     };
-    
+
     const handleDeleteSuccessClose = () => {
         // Just close the success modal; the members list has already been
         // updated by the Inertia delete response (with preserveScroll)
@@ -413,12 +410,6 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
                                 className="cursor-pointer px-4 py-2 rounded-full bg-purple-600 text-white text-sm shadow-sm hover:bg-purple-500"
                             >
                                 View Time Logs
-                            </a>
-                            <a
-                                href="/admin/transactions"
-                                className="cursor-pointer px-4 py-2 rounded-full bg-emerald-600 text-white text-sm shadow-sm hover:bg-emerald-500"
-                            >
-                                Transactions
                             </a>
                             <a
                                 href="/admin/reports"
@@ -545,11 +536,10 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
                                                         </div>
                                                     </div>
                                                     <div
-                                                        className={`text-[10px] px-2 py-1 rounded-full border ${
-                                                            s.is_active
+                                                        className={`text-[10px] px-2 py-1 rounded-full border ${s.is_active
                                                                 ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
                                                                 : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {s.is_active ? 'Active' : 'Closed'} · {s.duration}
                                                     </div>
