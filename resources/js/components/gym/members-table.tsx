@@ -56,54 +56,65 @@ export default function MembersTable({ members, filteredMembers, computeStatus, 
 
   return (
     <div className="p-4">
-      <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <h3 className="text-sm font-semibold text-gray-100">Member Overview</h3>
-        <div className="flex flex-wrap items-center gap-2 justify-end">
-          <div className="relative">
+      <div className="mb-6 flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-gray-100">Member Overview</h3>
+          <span className="md:hidden text-[10px] text-gray-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+            {displayedMembers.length} members
+          </span>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          {/* Search Bar - Full width on mobile */}
+          <div className="relative w-full">
             <input
               type="text"
               placeholder="Search by name or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-56 pl-9 pr-3 py-1.5 text-xs bg-slate-900 border border-slate-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              className="w-full pl-9 pr-3 py-2 text-xs bg-slate-900 border border-slate-700 rounded-xl text-gray-100 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all"
             />
-            <svg className="absolute left-2.5 top-2 w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="absolute left-3 top-2.5 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-2 py-1.5 bg-slate-950 border border-gray-600 rounded-lg text-[11px] text-gray-200 focus:outline-none focus:border-blue-500"
-          >
-            <option value="ALL">All statuses</option>
-            <option value="ACTIVE">Active</option>
-            <option value="EXPIRING">Expiring soon</option>
-            <option value="EXPIRED">Expired</option>
-            <option value="INACTIVE">Inactive</option>
-          </select>
-          <select
-            value={filterPlan}
-            onChange={(e) => setFilterPlan(e.target.value)}
-            className="px-2 py-1.5 bg-slate-950 border border-gray-600 rounded-lg text-[11px] text-gray-200 focus:outline-none focus:border-blue-500"
-          >
-            <option value="ALL">All plans</option>
-            <option value="Daily">Daily</option>
-            <option value="Monthly">Monthly</option>
-          </select>
-          <select
-            value={filterDays}
-            onChange={(e) => setFilterDays(parseInt(e.target.value))}
-            className="px-2 py-1.5 bg-slate-950 border border-gray-600 rounded-lg text-[11px] text-gray-200 focus:outline-none focus:border-blue-500"
-          >
-            <option value={0}>All dates</option>
-            <option value={7}>Expiring in 7 days</option>
-            <option value={14}>Expiring in 14 days</option>
-            <option value={30}>Expiring in 30 days</option>
-          </select>
+
+          {/* Filters Grid - 2x2 on mobile, single row on desktop */}
+          <div className="grid grid-cols-2 lg:flex lg:flex-row gap-2">
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="w-full lg:w-auto px-3 py-2 bg-slate-950 border border-gray-700 rounded-xl text-[11px] text-gray-200 focus:outline-none focus:border-blue-500 transition-all cursor-pointer"
+            >
+              <option value="ALL">All statuses</option>
+              <option value="ACTIVE">Active</option>
+              <option value="EXPIRING">Expiring soon</option>
+              <option value="EXPIRED">Expired</option>
+              <option value="INACTIVE">Inactive</option>
+            </select>
+            <select
+              value={filterPlan}
+              onChange={(e) => setFilterPlan(e.target.value)}
+              className="w-full lg:w-auto px-3 py-2 bg-slate-950 border border-gray-700 rounded-xl text-[11px] text-gray-200 focus:outline-none focus:border-blue-500 transition-all cursor-pointer"
+            >
+              <option value="ALL">All plans</option>
+              <option value="Daily">Daily</option>
+              <option value="Monthly">Monthly</option>
+            </select>
+            <select
+              value={filterDays}
+              onChange={(e) => setFilterDays(parseInt(e.target.value))}
+              className="w-full lg:w-auto col-span-2 lg:col-span-1 px-3 py-2 bg-slate-950 border border-gray-700 rounded-xl text-[11px] text-gray-200 focus:outline-none focus:border-blue-500 transition-all cursor-pointer"
+            >
+              <option value={0}>All dates</option>
+              <option value={7}>Expiring in 7 days</option>
+              <option value={14}>Expiring in 14 days</option>
+              <option value={30}>Expiring in 30 days</option>
+            </select>
+          </div>
         </div>
       </div>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto hidden md:block">
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-700">
@@ -199,8 +210,8 @@ export default function MembersTable({ members, filteredMembers, computeStatus, 
                           onClick={() => renewMember(member.id)}
                           disabled={status.code !== 'EXPIRED'}
                           className={`cursor-pointer px-3 py-1 rounded-lg text-sm ${status.code === 'EXPIRED'
-                              ? 'bg-blue-600 text-white hover:bg-blue-700'
-                              : 'bg-slate-800 text-gray-500 cursor-not-allowed opacity-50'
+                            ? 'bg-blue-600 text-white hover:bg-blue-700'
+                            : 'bg-slate-800 text-gray-500 cursor-not-allowed opacity-50'
                             }`}
                         >
                           Renew
@@ -223,6 +234,12 @@ export default function MembersTable({ members, filteredMembers, computeStatus, 
                             Reset Password
                           </button>
                         )}
+                        <button
+                          onClick={() => deleteMember(member.id)}
+                          className="cursor-pointer px-3 py-1 bg-red-600/20 text-red-300 border border-red-500/30 rounded-lg hover:bg-red-600 hover:text-white text-sm"
+                        >
+                          Delete
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -231,6 +248,97 @@ export default function MembersTable({ members, filteredMembers, computeStatus, 
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {displayedMembers.length === 0 ? (
+          <div className="text-center text-gray-500 p-8 border border-dashed border-slate-800 rounded-xl">
+            No members found.
+          </div>
+        ) : (
+          displayedMembers.map(member => {
+            const status = computeStatus(member);
+            return (
+              <div
+                key={member.id}
+                ref={el => {
+                  if (memberRowRefs.current) {
+                    memberRowRefs.current[member.id] = el as any;
+                  }
+                }}
+                className="bg-slate-950/80 border border-gray-700 rounded-xl p-4 space-y-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-base font-semibold text-gray-100 truncate">
+                      {member.fullName || '(No name)'}
+                    </div>
+                    <div className="mt-1 text-xs text-gray-400 space-y-0.5">
+                      {member.email && <div className="truncate">{member.email}</div>}
+                      {member.phone && <div>{member.phone}</div>}
+                    </div>
+                  </div>
+                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-medium border whitespace-nowrap ${status.className === 'active' ? 'bg-green-500/10 text-green-300 border-green-500/35' :
+                    status.className === 'expiring' ? 'bg-amber-500/10 text-amber-300 border-amber-500/35' :
+                      status.className === 'expired' ? 'bg-red-500/10 text-red-300 border-red-500/35' :
+                        'bg-gray-500/10 text-gray-300 border-gray-500/35'
+                    }`}>
+                    {status.label}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                  <div className="bg-slate-900/50 p-2 rounded-lg border border-slate-800">
+                    <div className="text-gray-500 mb-1 caps tracking-wider">PLAN</div>
+                    <div className="text-gray-200 font-medium">{member.plan}</div>
+                  </div>
+                  <div className="bg-slate-900/50 p-2 rounded-lg border border-slate-800">
+                    <div className="text-gray-500 mb-1 caps tracking-wider">EXPIRES</div>
+                    <div className="text-gray-200 font-medium truncate">
+                      {member.plan === 'Daily' ? 'Today' : formatDate(member.endDate)}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-800">
+                  <button
+                    onClick={() => editMember(member)}
+                    className="flex-1 min-w-[80px] px-3 py-2 bg-slate-900 border border-slate-700 text-gray-300 rounded-lg hover:bg-slate-800 text-xs font-medium"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => renewMember(member.id)}
+                    disabled={status.code !== 'EXPIRED'}
+                    className={`flex-1 min-w-[80px] px-3 py-2 rounded-lg text-xs font-medium ${status.code === 'EXPIRED'
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-slate-800 text-gray-500 cursor-not-allowed opacity-50'
+                      }`}
+                  >
+                    Renew
+                  </button>
+                  {member.hasUserAccount && member.userId && (
+                    <a
+                      href={`/admin/members/${member.userId}/qr`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 min-w-[80px] px-3 py-2 bg-teal-600/20 text-teal-300 border border-teal-500/30 rounded-lg text-xs font-medium text-center"
+                    >
+                      QR ID
+                    </a>
+                  )}
+                  <button
+                    onClick={() => deleteMember(member.id)}
+                    className="px-3 py-2 bg-red-600/10 text-red-400 border border-red-500/20 rounded-lg text-xs"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );

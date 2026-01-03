@@ -70,7 +70,7 @@ export default function MemberForm({ formData, setFormData, isEditing, resetForm
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-gray-400 mb-2">Email</label>
               <input
@@ -132,7 +132,7 @@ export default function MemberForm({ formData, setFormData, isEditing, resetForm
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-gray-400 mb-2">Plan</label>
               <select
@@ -218,7 +218,7 @@ export default function MemberForm({ formData, setFormData, isEditing, resetForm
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-gray-400 mb-2">End Date (auto if blank)</label>
               <input

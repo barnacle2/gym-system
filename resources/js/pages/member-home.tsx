@@ -46,6 +46,7 @@ interface Props {
 export default function MemberHome({ member, user, activeMembersCount, timeTracking, balanceLogs }: Props) {
     const { post } = useForm();
     const [showQRModal, setShowQRModal] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [toggling, setToggling] = useState(false);
     const toggleFormRef = useRef<HTMLFormElement | null>(null);
     const balanceLogsRef = useRef<HTMLDivElement | null>(null);
@@ -209,32 +210,79 @@ export default function MemberHome({ member, user, activeMembersCount, timeTrack
 
             <div className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 text-gray-200">
                 {/* Header */}
-                <header className="sticky top-0 z-10 border-b border-gray-700 bg-slate-900/80 p-4 backdrop-blur-sm">
-                    <div className="flex items-center justify-between">
-                        <h1 className="text-xl font-bold tracking-wide">
-                            🏋️ Fitness Point
-                        </h1>
+                <header className="sticky top-0 z-30 border-b border-slate-800 bg-slate-900/90 px-4 py-3 backdrop-blur-md">
+                    <div className="mx-auto flex max-w-4xl items-center justify-between">
                         <div className="flex items-center gap-2">
+                            <span className="text-xl">🏋️</span>
+                            <h1 className="text-lg font-bold tracking-tight text-white">
+                                Fitness Point
+                            </h1>
+                        </div>
+
+                        {/* Desktop Navigation */}
+                        <nav className="hidden md:flex items-center gap-2">
                             <a
                                 href="/member/profile"
-                                className="cursor-pointer rounded-lg bg-gray-700 px-4 py-2 text-sm text-gray-200 hover:bg-gray-600"
+                                className="cursor-pointer rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-gray-200 hover:bg-gray-700 transition-colors"
                             >
                                 Profile
                             </a>
                             <a
                                 href="/member/balance-logs"
-                                className="cursor-pointer rounded-lg bg-emerald-700 px-4 py-2 text-sm text-gray-100 hover:bg-emerald-600"
+                                className="cursor-pointer rounded-lg bg-emerald-700/20 text-emerald-400 border border-emerald-500/20 px-4 py-2 text-sm font-medium hover:bg-emerald-600 hover:text-white transition-all"
                             >
                                 Balance Logs
                             </a>
                             <button
                                 onClick={handleLogout}
-                                className="cursor-pointer rounded-lg bg-gray-700 px-4 py-2 text-sm text-gray-200 hover:bg-gray-600"
+                                className="cursor-pointer rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-gray-200 hover:bg-red-500 hover:text-white transition-all"
                             >
                                 Logout
                             </button>
-                        </div>
+                        </nav>
+
+                        {/* Mobile Toggle Button */}
+                        <button
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            className="md:hidden p-2 rounded-lg bg-slate-800 border border-slate-700 text-gray-300 hover:text-white focus:outline-none"
+                        >
+                            {isMenuOpen ? (
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            ) : (
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                </svg>
+                            )}
+                        </button>
                     </div>
+
+                    {/* Mobile Menu Drawer */}
+                    {isMenuOpen && (
+                        <div className="md:hidden absolute top-full left-0 w-full bg-slate-950 border-b border-slate-800 shadow-2xl animate-in slide-in-from-top duration-200">
+                            <div className="flex flex-col p-4 gap-2">
+                                <a
+                                    href="/member/profile"
+                                    className="flex items-center px-4 py-3 rounded-xl bg-slate-900 text-gray-200 border border-slate-800 text-sm font-medium"
+                                >
+                                    My Profile
+                                </a>
+                                <a
+                                    href="/member/balance-logs"
+                                    className="flex items-center px-4 py-3 rounded-xl bg-emerald-600/10 text-emerald-400 border border-emerald-500/10 text-sm font-medium"
+                                >
+                                    View Balance Logs
+                                </a>
+                                <button
+                                    onClick={handleLogout}
+                                    className="flex items-center px-4 py-3 rounded-xl bg-slate-900 text-red-400 border border-red-500/10 text-sm font-medium text-left"
+                                >
+                                    Logout
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </header>
 
                 <div className="container mx-auto max-w-4xl p-5">
@@ -276,85 +324,81 @@ export default function MemberHome({ member, user, activeMembersCount, timeTrack
                     )}
 
                     {/* Membership Card */}
-                    <div className="mb-6 rounded-2xl border border-gray-700 bg-gray-800/80 p-6">
-                        <div className="mb-4 flex items-center justify-between">
-                            <h3 className="text-lg font-semibold">
-                                Membership Status
-                            </h3>
+                    <div className="mb-6 rounded-2xl border border-slate-800 bg-gray-900/40 p-5 sm:p-6 shadow-sm">
+                        <div className="mb-5 flex items-center justify-between border-b border-slate-800 pb-4">
+                            <div>
+                                <h3 className="text-base sm:text-lg font-semibold text-white">
+                                    Membership Status
+                                </h3>
+                                <div className="text-[10px] text-gray-500 uppercase tracking-widest font-medium mt-0.5">Subscription Details</div>
+                            </div>
                             <span
-                                className={`rounded-full border px-3 py-1 text-sm ${status.className}`}
+                                className={`rounded-full border px-3 py-1 text-[10px] sm:text-xs font-bold uppercase tracking-wide shadow-sm ${status.className}`}
                             >
                                 {status.label}
                             </span>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                            <div>
-                                <div className="space-y-3">
-                                    <div>
-                                        <label className="text-xs text-gray-400">
-                                            Plan
-                                        </label>
-                                        <div className="text-sm font-medium">
-                                            {member.plan}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="text-xs text-gray-400">
-                                            Start Date
-                                        </label>
-                                        <div className="text-sm">
-                                            {formatDate(member.startDate)}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="text-xs text-gray-400">
-                                            End Date
-                                        </label>
-                                        <div className="text-sm">
-                                            {member.plan === 'Daily'
-                                                ? 'Present (Daily)'
-                                                : formatDate(member.endDate)}
-                                        </div>
-                                    </div>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                            <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/50">
+                                <label className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold block mb-1">
+                                    Current Plan
+                                </label>
+                                <div className="text-xs sm:text-sm font-bold text-gray-100 italic">
+                                    {member.plan}
                                 </div>
                             </div>
-                            <div>
-                                <div className="space-y-3">
-                                    <div>
-                                        <label className="text-xs text-gray-400">
-                                            Email
-                                        </label>
-                                        <div className="text-sm">
-                                            {member.email || 'Not provided'}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="text-xs text-gray-400">
-                                            Phone
-                                        </label>
-                                        <div className="text-sm">
-                                            {member.phone || 'Not provided'}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="text-xs text-gray-400">
-                                            Renewals
-                                        </label>
-                                        <div className="text-sm">
-                                            {member.renewals} times
-                                        </div>
-                                    </div>
+                            <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/50">
+                                <label className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold block mb-1">
+                                    Subscription ID
+                                </label>
+                                <div className="text-xs sm:text-sm font-bold text-gray-200">
+                                    #FP-{member.id}
+                                </div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/50">
+                                <label className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold block mb-1">
+                                    Valid From
+                                </label>
+                                <div className="text-xs sm:text-sm font-bold text-gray-200">
+                                    {formatDate(member.startDate)}
+                                </div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/50">
+                                <label className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold block mb-1">
+                                    Expiry Date
+                                </label>
+                                <div className="text-xs sm:text-sm font-bold text-gray-200">
+                                    {member.plan === 'Daily'
+                                        ? 'Present (Daily)'
+                                        : formatDate(member.endDate)}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-950/30 border border-slate-800/30">
+                                <span className="text-lg opacity-50">📧</span>
+                                <div className="min-w-0">
+                                    <div className="text-[10px] text-gray-500 uppercase font-semibold">Email</div>
+                                    <div className="text-xs text-gray-300 truncate font-medium">{member.email || 'Not provided'}</div>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-950/30 border border-slate-800/30">
+                                <span className="text-lg opacity-50">📞</span>
+                                <div className="min-w-0">
+                                    <div className="text-[10px] text-gray-500 uppercase font-semibold">Phone</div>
+                                    <div className="text-xs text-gray-300 truncate font-medium">{member.phone || 'Not provided'}</div>
                                 </div>
                             </div>
                         </div>
 
                         {member.notes && (
-                            <div className="mt-4 border-t border-gray-700 pt-4">
-                                <label className="text-xs text-gray-400">
-                                    Notes
+                            <div className="mt-5 rounded-xl bg-amber-500/5 border border-amber-500/10 p-4">
+                                <label className="text-[10px] text-amber-500/70 uppercase tracking-wider font-bold block mb-1">
+                                    Plan Notes
                                 </label>
-                                <div className="mt-1 text-sm">
+                                <div className="text-xs text-gray-300 leading-relaxed">
                                     {member.notes}
                                 </div>
                             </div>
@@ -362,48 +406,46 @@ export default function MemberHome({ member, user, activeMembersCount, timeTrack
                     </div>
 
                     {/* Session Tracker */}
-                    <section className="bg-gray-800/80 border border-gray-700 rounded-2xl overflow-hidden mb-6">
-                        <div className="p-6">
+                    <section className="bg-gray-900/40 border border-slate-800 rounded-2xl overflow-hidden mb-6">
+                        <div className="p-5 sm:p-6">
                             {/* Hidden form for CSRF-safe toggle */}
                             <form ref={toggleFormRef} method="post" action="/api/time-tracking/toggle" className="hidden">
                                 <input type="hidden" name="_token" value={csrf} />
                             </form>
                             <div className="mb-4 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className={`flex h-10 w-10 items-center justify-center rounded-full border ${'bg-green-500/10 border-green-500/20'
-                                        }`}>
-                                        <span className={`text-lg text-green-400`}>⏱️</span>
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                                        <span className="text-lg">⏱️</span>
                                     </div>
-                                    <h3 className="text-lg font-semibold text-gray-200">Session Tracker</h3>
+                                    <h3 className="text-base sm:text-lg font-semibold text-gray-200">Session Tracker</h3>
                                 </div>
-                                {/* no right-side balance in subscription model */}
                             </div>
 
-
-
                             {/* Gym Occupancy Indicator */}
-                            <div className="mb-4 rounded-lg bg-slate-900/50 border border-slate-700 p-4">
-                                <div className="flex items-center justify-between">
+                            <div className="mb-4 rounded-xl bg-slate-950/50 border border-slate-800 p-4">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/20 text-blue-400">
+                                        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/10">
                                             👥
                                         </div>
                                         <div>
-                                            <div className="text-sm font-medium text-gray-400">Current Gym Occupancy</div>
-                                            <div className="text-xl font-bold text-white">
-                                                {activeMembersCount} <span className="text-sm font-normal text-gray-500">people active now</span>
+                                            <div className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Current Attendance</div>
+                                            <div className="text-lg font-bold text-white">
+                                                {activeMembersCount} <span className="text-xs font-normal text-gray-500 ml-1">people in gym</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     {activeSession && (
-                                        <div className="text-right">
-                                            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400 border border-emerald-500/20">
+                                        <div className="flex flex-col sm:items-end p-2 sm:p-0 bg-emerald-500/5 sm:bg-transparent rounded-lg border border-emerald-500/10 sm:border-0">
+                                            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-medium text-emerald-400 border border-emerald-500/20">
                                                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
-                                                You are timed in
+                                                YOU ARE ACTIVE
                                             </div>
-                                            <div className="mt-1 text-xs text-gray-400">
-                                                {activeSession.duration} • Since {activeSession.time_in}
+                                            <div className="mt-1 text-xs text-gray-400 flex items-center gap-2">
+                                                <span className="font-mono">{activeSession.duration}</span>
+                                                <span className="text-gray-600">•</span>
+                                                <span>Since {activeSession.time_in}</span>
                                             </div>
                                         </div>
                                     )}
@@ -435,72 +477,51 @@ export default function MemberHome({ member, user, activeMembersCount, timeTrack
 
                     {/* QR Code Section */}
                     {member.qrCode && (
-                        <div className="mb-6 rounded-2xl border border-gray-700 bg-gray-800/80 p-6">
-                            <div className="flex flex-col items-center gap-6 md:flex-row">
-                                <div className="flex-1">
-                                    <h3 className="mb-2 text-lg font-semibold">
+                        <div className="mb-6 rounded-2xl border border-slate-800 bg-gray-900/40 p-5 sm:p-6 shadow-sm">
+                            <div className="flex flex-col items-center gap-6 lg:flex-row">
+                                <div className="flex-1 w-full">
+                                    <h3 className="mb-2 text-base sm:text-lg font-semibold text-white">
                                         Time Tracking QR Code
                                     </h3>
-                                    <p className="mb-3 text-sm text-gray-400">
-                                        {timeTracking.active_session
-                                            ? 'Scan this QR code to time out at the gym scanner.'
-                                            : 'Scan this QR code to time in at the gym scanner.'}
+                                    <p className="mb-4 text-xs sm:text-sm text-gray-400 leading-relaxed">
+                                        Scan this QR code to time in/out at the gym scanner.
                                     </p>
-                                    <div className="space-y-2 text-xs text-gray-500">
-                                        <div>
-                                            • {timeTracking.active_session
-                                                ? '🔴 Ready to TIME OUT - End your session'
-                                                : '🟢 Ready to TIME IN - Start your session'}
-
-                                        </div>
-
-                                        <div>
-                                            • Valid until{' '}
-                                            {formatDate(member.endDate)}
-                                        </div>
-                                        <div>
-                                            • Keep this private - do not share
-                                            with others
-                                        </div>
-                                        <div>
-                                            •{' '}
-                                            <span className="text-blue-400">
-                                                Click to enlarge
+                                    <div className="space-y-2.5 rounded-xl bg-slate-950/40 p-3 sm:p-4 border border-slate-800">
+                                        <div className="flex items-center gap-2 text-[11px] sm:text-xs text-gray-400">
+                                            <div className={`h-2 w-2 rounded-full ${timeTracking.active_session ? 'bg-red-500 animate-pulse' : 'bg-green-500 animate-pulse'}`}></div>
+                                            <span>
+                                                {timeTracking.active_session ? 'Ready to TIME OUT' : 'Ready to TIME IN'}
                                             </span>
                                         </div>
+                                        <div className="text-[11px] sm:text-xs text-gray-500 flex items-center gap-2">
+                                            <span className="opacity-70">📅</span>
+                                            Valid until {formatDate(member.endDate)}
+                                        </div>
+                                        <div className="text-[11px] sm:text-xs text-gray-500 flex items-center gap-2">
+                                            <span className="opacity-70">🔒</span>
+                                            Private QR - Do not share
+                                        </div>
+                                        <button
+                                            onClick={() => setShowQRModal(true)}
+                                            className="w-full mt-2 py-2.5 rounded-lg bg-blue-600/10 text-blue-400 border border-blue-500/20 text-[11px] sm:text-xs font-semibold hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <span className="text-sm">🔍</span> Click to enlarge & Print
+                                        </button>
                                     </div>
                                 </div>
-                                <div className="flex-shrink-0">
+                                <div className="flex-shrink-0 w-full lg:w-auto flex justify-center mt-2 lg:mt-0">
                                     <div
-                                        className="cursor-pointer rounded-xl border border-gray-600 bg-white/90 p-4 transition-colors hover:bg-white/95"
+                                        className="cursor-pointer rounded-2xl border border-slate-700 bg-white p-4 shadow-xl transition-transform hover:scale-[1.02]"
                                         onClick={() => setShowQRModal(true)}
-                                        role="button"
-                                        tabIndex={0}
-                                        onKeyDown={(e) =>
-                                            e.key === 'Enter' &&
-                                            setShowQRModal(true)
-                                        }
                                     >
                                         <div
                                             dangerouslySetInnerHTML={{
                                                 __html: member.qrCode,
                                             }}
-                                            className="flex h-48 w-48 items-center justify-center"
+                                            className="flex h-40 w-40 sm:h-48 sm:w-48 items-center justify-center"
                                         />
-                                        <div className="mt-2 flex flex-col items-center gap-1 font-mono text-xs text-gray-600">
-                                            <span>ID: {member.id}</span>
-                                            <button
-                                                type="button"
-                                                className="mt-1 rounded bg-blue-600 px-3 py-1 text-[11px] font-medium text-white hover:bg-blue-700 cursor-pointer"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setShowQRModal(true);
-                                                    // Give React a moment to render the modal before printing
-                                                    setTimeout(() => window.print(), 300);
-                                                }}
-                                            >
-                                                Print QR ID
-                                            </button>
+                                        <div className="mt-3 flex flex-col items-center gap-1 font-mono text-[10px] text-gray-400">
+                                            <span className="text-gray-500">MEMBER ID: {member.id}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -511,45 +532,48 @@ export default function MemberHome({ member, user, activeMembersCount, timeTrack
 
 
                     {/* Quick Actions */}
-                    <div className="rounded-2xl border border-gray-700 bg-gray-800/80 p-6">
-                        <h3 className="mb-4 text-lg font-semibold">
-                            Quick Actions
-                        </h3>
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <div className="rounded-2xl border border-slate-800 bg-gray-900/40 p-5 sm:p-6 mb-8">
+                        <div className="mb-4">
+                            <h3 className="text-base sm:text-lg font-semibold text-white">
+                                Recommended for You
+                            </h3>
+                            <div className="text-[10px] text-gray-500 uppercase tracking-widest font-medium mt-0.5">Explore Gym Features</div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <a
                                 href="/member/classes"
-                                className="cursor-pointer rounded-lg border border-gray-600 bg-slate-950/50 p-4 text-center hover:border-blue-500 hover:bg-slate-900/70 transition-colors"
+                                className="group cursor-pointer rounded-xl border border-slate-800 bg-slate-950/30 p-4 text-center hover:border-blue-500/50 hover:bg-blue-500/5 transition-all"
                             >
-                                <div className="mb-2 text-2xl">📅</div>
-                                <div className="text-sm font-medium">
+                                <div className="mb-2 text-3xl transition-transform group-hover:scale-110">📅</div>
+                                <div className="text-sm font-bold text-gray-100">
                                     Book Classes
                                 </div>
-                                <div className="mt-1 text-xs text-gray-400">
-                                    Preview screen
+                                <div className="mt-1 text-[10px] text-gray-500 font-medium">
+                                    Reserved slots
                                 </div>
                             </a>
                             <a
                                 href="/member/workout-plans"
-                                className="cursor-pointer rounded-lg border border-gray-600 bg-slate-950/50 p-4 text-center hover:border-emerald-500 hover:bg-slate-900/70 transition-colors"
+                                className="group cursor-pointer rounded-xl border border-slate-800 bg-slate-950/30 p-4 text-center hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all"
                             >
-                                <div className="mb-2 text-2xl">💪</div>
-                                <div className="text-sm font-medium">
+                                <div className="mb-2 text-3xl transition-transform group-hover:scale-110">💪</div>
+                                <div className="text-sm font-bold text-gray-100">
                                     Workout Plans
                                 </div>
-                                <div className="mt-1 text-xs text-gray-400">
-                                    Preview screen
+                                <div className="mt-1 text-[10px] text-gray-500 font-medium">
+                                    View routines
                                 </div>
                             </a>
                             <a
                                 href="/member/progress"
-                                className="cursor-pointer rounded-lg border border-gray-600 bg-slate-950/50 p-4 text-center hover:border-purple-500 hover:bg-slate-900/70 transition-colors"
+                                className="group cursor-pointer rounded-xl border border-slate-800 bg-slate-950/30 p-4 text-center hover:border-purple-500/50 hover:bg-purple-500/5 transition-all"
                             >
-                                <div className="mb-2 text-2xl">📊</div>
-                                <div className="text-sm font-medium">
-                                    Progress Tracking
+                                <div className="mb-2 text-3xl transition-transform group-hover:scale-110">📊</div>
+                                <div className="text-sm font-bold text-gray-100">
+                                    Tracking
                                 </div>
-                                <div className="mt-1 text-xs text-gray-400">
-                                    Preview screen
+                                <div className="mt-1 text-[10px] text-gray-500 font-medium">
+                                    Body metrics
                                 </div>
                             </a>
                         </div>

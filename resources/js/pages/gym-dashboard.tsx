@@ -77,6 +77,7 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
     const [deletedMemberName, setDeletedMemberName] = useState('');
     const [lastEditedId, setLastEditedId] = useState<string | null>(null);
     const [pendingScrollToNew, setPendingScrollToNew] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const formRef = useRef<HTMLDivElement>(null);
     const memberRowRefs = useRef<Record<string, HTMLTableRowElement | null>>({});
     const recentActivityRef = useRef<HTMLDivElement | null>(null);
@@ -371,64 +372,123 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
             <Head title="Gym Dashboard" />
 
             <div className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 text-gray-200">
-                {/* Header */}
-                <header className="sticky top-0 z-20 border-b border-slate-800 bg-slate-950/80 px-6 py-3 backdrop-blur-sm">
-                    <div className="mx-auto flex max-w-7xl items-center justify-between">
-                        <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-2">
-                                    <img
-                                        src="/fp-logo.png"
-                                        alt="Fitness Point logo"
-                                        className="h-10 w-10 object-contain"
-                                    />
-                                    <h1 className="text-xl font-semibold tracking-wide">Fitness Point Dashboard</h1>
-                                </div>
-                                <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-0.5 text-xs font-medium text-emerald-300 border border-emerald-500/25">
-                                    Admin View
+                <header className="sticky top-0 z-30 border-b border-slate-800 bg-slate-950/90 px-4 py-3 backdrop-blur-md sm:px-6">
+                    <div className="mx-auto flex items-center justify-between max-w-7xl">
+                        <div className="flex flex-col gap-0.5 sm:gap-1">
+                            <div className="flex items-center gap-2 sm:gap-3">
+                                <img
+                                    src="/fp-logo.png"
+                                    alt="Fitness Point logo"
+                                    className="h-8 w-8 sm:h-10 sm:w-10 object-contain"
+                                />
+                                <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white">Fitness Point</h1>
+                                <span className="hidden sm:inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] sm:text-xs font-medium text-emerald-300 border border-emerald-500/25">
+                                    Admin
                                 </span>
                             </div>
-                            <p className="text-xs text-gray-500">
-                                Manage memberships, monitor sessions, and keep your gym running smoothly.
+                            <p className="hidden sm:block text-[11px] text-gray-500">
+                                Management Dashboard
                             </p>
                         </div>
-                        <div className="flex items-center gap-3">
+
+                        {/* Desktop Navigation */}
+                        <nav className="hidden lg:flex items-center gap-2">
                             <a
                                 href="/admin/balances"
-                                className="cursor-pointer px-4 py-2 rounded-full bg-blue-600 text-white text-sm shadow-sm hover:bg-blue-500"
+                                className="cursor-pointer px-4 py-2 rounded-full bg-blue-600/10 text-blue-400 border border-blue-500/20 text-sm font-medium hover:bg-blue-600 hover:text-white transition-all shadow-sm"
                             >
                                 Balance Management
                             </a>
                             <a
                                 href="/admin/qr-scanner"
-                                className="cursor-pointer px-4 py-2 rounded-full bg-pink-600 text-white text-sm shadow-sm hover:bg-pink-500"
+                                className="cursor-pointer px-4 py-2 rounded-full bg-pink-600/10 text-pink-400 border border-pink-500/20 text-sm font-medium hover:bg-pink-600 hover:text-white transition-all shadow-sm"
                             >
                                 Scan QR
                             </a>
                             <a
                                 href="/admin/time-logs"
-                                className="cursor-pointer px-4 py-2 rounded-full bg-purple-600 text-white text-sm shadow-sm hover:bg-purple-500"
+                                className="cursor-pointer px-4 py-2 rounded-full bg-purple-600/10 text-purple-400 border border-purple-500/20 text-sm font-medium hover:bg-purple-600 hover:text-white transition-all shadow-sm"
                             >
-                                View Time Logs
+                                Time Logs
                             </a>
                             <a
                                 href="/admin/reports"
-                                className="cursor-pointer px-4 py-2 rounded-full bg-orange-600 text-white text-sm shadow-sm hover:bg-orange-500"
+                                className="cursor-pointer px-4 py-2 rounded-full bg-orange-600/10 text-orange-400 border border-orange-500/20 text-sm font-medium hover:bg-orange-600 hover:text-white transition-all shadow-sm"
                             >
                                 Reports
                             </a>
                             <button
                                 onClick={handleLogout}
-                                className="cursor-pointer px-4 py-2 rounded-full bg-slate-800 text-gray-200 text-sm hover:bg-slate-700"
+                                className="cursor-pointer px-4 py-2 rounded-full bg-slate-800 text-gray-300 text-sm font-medium hover:bg-red-500 hover:text-white hover:border-red-600 transition-all ml-2"
                             >
-                                Logout
+                                Exit
+                            </button>
+                        </nav>
+
+                        {/* Mobile Toggle Button */}
+                        <div className="lg:hidden flex items-center gap-3">
+                            <span className="sm:hidden inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-300 border border-emerald-500/25">
+                                Admin
+                            </span>
+                            <button
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                className="p-2 rounded-lg bg-slate-900 border border-slate-700 text-gray-300 hover:text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                aria-label="Toggle menu"
+                            >
+                                {isMenuOpen ? (
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                ) : (
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                    </svg>
+                                )}
                             </button>
                         </div>
                     </div>
+
+                    {/* Mobile Menu Drawer */}
+                    {isMenuOpen && (
+                        <div className="lg:hidden absolute top-full left-0 w-full bg-slate-950 border-b border-slate-800 shadow-2xl animate-in slide-in-from-top duration-200">
+                            <div className="flex flex-col p-4 gap-2">
+                                <a
+                                    href="/admin/balances"
+                                    className="flex items-center px-4 py-3 rounded-xl bg-blue-600/10 text-blue-400 border border-blue-500/10 text-sm font-medium hover:bg-blue-600 hover:text-white transition-all"
+                                >
+                                    Balance Management
+                                </a>
+                                <a
+                                    href="/admin/qr-scanner"
+                                    className="flex items-center px-4 py-3 rounded-xl bg-pink-600/10 text-pink-400 border border-pink-500/10 text-sm font-medium hover:bg-pink-600 hover:text-white transition-all"
+                                >
+                                    Scan QR Code
+                                </a>
+                                <a
+                                    href="/admin/time-logs"
+                                    className="flex items-center px-4 py-3 rounded-xl bg-purple-600/10 text-purple-400 border border-purple-500/10 text-sm font-medium hover:bg-purple-600 hover:text-white transition-all"
+                                >
+                                    Viewing Time Logs
+                                </a>
+                                <a
+                                    href="/admin/reports"
+                                    className="flex items-center px-4 py-3 rounded-xl bg-orange-600/10 text-orange-400 border border-orange-500/10 text-sm font-medium hover:bg-orange-600 hover:text-white transition-all"
+                                >
+                                    Reports & Insights
+                                </a>
+                                <button
+                                    onClick={handleLogout}
+                                    className="flex items-center px-4 py-3 rounded-xl bg-slate-900 text-red-400 border border-red-500/20 text-sm font-medium hover:bg-red-600 hover:text-white transition-all mt-2"
+                                >
+                                    Logout & Exit
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </header>
 
                 {/* Main content */}
-                <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl px-4 py-4 sm:py-6 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px,minmax(0,1fr)]">
                         {/* Left Panel - Member form card */}
                         <aside ref={formRef} className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 shadow-lg shadow-slate-950/40">
@@ -537,8 +597,8 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
                                                     </div>
                                                     <div
                                                         className={`text-[10px] px-2 py-1 rounded-full border ${s.is_active
-                                                                ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-                                                                : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                                                            ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                                                            : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
                                                             }`}
                                                     >
                                                         {s.is_active ? 'Active' : 'Closed'} · {s.duration}
