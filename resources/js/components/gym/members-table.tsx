@@ -17,7 +17,6 @@ type Props = {
   toggleMemberStatus: (id: string) => void;
   sendPasswordReset: (id: string) => void;
   formatDate: (s: string) => string;
-  deleteMember: (id: string) => void;
   memberRowRefs: React.RefObject<Record<string, HTMLTableRowElement | null>>;
   filterStatus: string;
   setFilterStatus: (v: string) => void;
@@ -27,7 +26,7 @@ type Props = {
   setFilterDays: (v: number) => void;
 };
 
-export default function MembersTable({ members, filteredMembers, computeStatus, editMember, renewMember, toggleMemberStatus, sendPasswordReset, formatDate, deleteMember, memberRowRefs, filterStatus, setFilterStatus, filterPlan, setFilterPlan, filterDays, setFilterDays }: Props) {
+export default function MembersTable({ members, filteredMembers, computeStatus, editMember, renewMember, toggleMemberStatus, sendPasswordReset, formatDate, memberRowRefs, filterStatus, setFilterStatus, filterPlan, setFilterPlan, filterDays, setFilterDays }: Props) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const displayedMembers = useMemo(() => {
@@ -234,12 +233,6 @@ export default function MembersTable({ members, filteredMembers, computeStatus, 
                             Reset Password
                           </button>
                         )}
-                        <button
-                          onClick={() => deleteMember(member.id)}
-                          className="cursor-pointer px-3 py-1 bg-red-600/20 text-red-300 border border-red-500/30 rounded-lg hover:bg-red-600 hover:text-white text-sm"
-                        >
-                          Delete
-                        </button>
                       </div>
                     </td>
                   </tr>
@@ -328,12 +321,6 @@ export default function MembersTable({ members, filteredMembers, computeStatus, 
                       QR ID
                     </a>
                   )}
-                  <button
-                    onClick={() => deleteMember(member.id)}
-                    className="px-3 py-2 bg-red-600/10 text-red-400 border border-red-500/20 rounded-lg text-xs"
-                  >
-                    Delete
-                  </button>
                 </div>
               </div>
             );

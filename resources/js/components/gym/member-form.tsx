@@ -161,7 +161,7 @@ export default function MemberForm({ formData, setFormData, isEditing, resetForm
                     return {
                       ...prev,
                       plan,
-                      endDate: months > 0 ? newEndDate.toISOString().split('T')[0] : prev.endDate
+                      endDate: newEndDate.toISOString().split('T')[0]
                     };
                   });
                 }}
@@ -202,7 +202,7 @@ export default function MemberForm({ formData, setFormData, isEditing, resetForm
                       return {
                         ...prev,
                         startDate: newStartDate,
-                        endDate: months > 0 ? newEndDate.toISOString().split('T')[0] : prev.endDate
+                        endDate: newEndDate.toISOString().split('T')[0]
                       };
                     }
 
@@ -224,14 +224,8 @@ export default function MemberForm({ formData, setFormData, isEditing, resetForm
               <input
                 type="date"
                 value={formData.endDate}
-                readOnly={formData.plan === 'Monthly'}
-                onChange={(e) => {
-                  if (formData.plan !== 'Monthly') {
-                    setFormData(prev => ({ ...prev, endDate: e.target.value }))
-                  }
-                }}
-                className={`w-full p-3 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:border-blue-500 [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-100 ${formData.plan === 'Monthly' ? 'bg-slate-900/50 text-gray-500 cursor-not-allowed' : 'bg-slate-950'
-                  }`}
+                readOnly
+                className="w-full p-3 border border-gray-600 rounded-lg text-gray-500 bg-slate-900/50 cursor-not-allowed focus:outline-none"
               />
             </div>
             <div>

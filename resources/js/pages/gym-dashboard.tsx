@@ -71,10 +71,6 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
     const [renewedMemberName, setRenewedMemberName] = useState('');
     const [deactivatedMemberName, setDeactivatedMemberName] = useState('');
     const [isDeactivating, setIsDeactivating] = useState(false);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
-    const [memberToDelete, setMemberToDelete] = useState<{ id: string, name: string } | null>(null);
-    const [deletedMemberName, setDeletedMemberName] = useState('');
     const [lastEditedId, setLastEditedId] = useState<string | null>(null);
     const [pendingScrollToNew, setPendingScrollToNew] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -335,37 +331,6 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
         }
     };
 
-    const deleteMember = (id: string) => {
-        const member = members.find(m => m.id === id);
-        if (member) {
-            setMemberToDelete({ id, name: member.fullName });
-            setShowDeleteConfirm(true);
-        }
-    };
-
-    const confirmDelete = () => {
-        if (!memberToDelete) return;
-
-        setDeletedMemberName(memberToDelete.name);
-
-        router.delete(`/members/${memberToDelete.id}`, {
-            onSuccess: () => {
-                setShowDeleteConfirm(false);
-                setShowDeleteSuccess(true);
-                // We'll handle the refresh after showing success
-            },
-            onError: () => {
-                setShowDeleteConfirm(false);
-            },
-            preserveScroll: true
-        });
-    };
-
-    const handleDeleteSuccessClose = () => {
-        // Just close the success modal; the members list has already been
-        // updated by the Inertia delete response (with preserveScroll)
-        setShowDeleteSuccess(false);
-    };
 
     return (
         <>
@@ -551,7 +516,6 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
                                             toggleMemberStatus={toggleMemberStatus}
                                             sendPasswordReset={sendPasswordReset}
                                             formatDate={formatDate}
-                                            deleteMember={deleteMember}
                                             memberRowRefs={memberRowRefs}
                                             filterStatus={filterStatus}
                                             setFilterStatus={setFilterStatus}
@@ -771,70 +735,6 @@ export default function GymDashboard({ members: initialMembers, recentSessions =
                 </div>
             )}
 
-            {showDeleteConfirm && memberToDelete && ( // Modal for delete confirmation
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-                    <div className="relative w-full max-w-md rounded-2xl border border-red-500/30 bg-slate-950/95 p-6 shadow-2xl">
-                        <div className="absolute inset-x-10 -top-6 flex justify-center">
-                            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-red-500/90 text-slate-950 shadow-lg">
-                                <span className="text-2xl">!</span>
-                            </div>
-                        </div>
-                        <div className="mt-4 text-center space-y-2">
-                            <h2 className="text-lg font-semibold text-gray-100">
-                                Delete Member Account
-                            </h2>
-                            <p className="text-sm text-gray-400">
-                                Are you sure you want to delete <span className="font-medium text-gray-200">{memberToDelete.name}</span>'s account? This action cannot be undone.
-                            </p>
-                        </div>
-                        <div className="mt-5 flex items-center justify-center gap-3">
-                            <button
-                                type="button"
-                                onClick={() => setShowDeleteConfirm(false)}
-                                className="cursor-pointer px-4 py-2 rounded-lg bg-gray-600 text-sm font-medium text-white hover:bg-gray-500"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="button"
-                                onClick={confirmDelete}
-                                className="cursor-pointer px-4 py-2 rounded-lg bg-red-600 text-sm font-medium text-white hover:bg-red-500"
-                            >
-                                Yes, Delete Account
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {showDeleteSuccess && ( // Modal for delete success
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-                    <div className="relative w-full max-w-md rounded-2xl border border-emerald-500/30 bg-slate-950/95 p-6 shadow-2xl">
-                        <div className="absolute inset-x-10 -top-6 flex justify-center">
-                            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/90 text-slate-950 shadow-lg">
-                                <span className="text-2xl">✓</span>
-                            </div>
-                        </div>
-                        <div className="mt-4 text-center space-y-2">
-                            <h2 className="text-lg font-semibold text-gray-100">
-                                Account Deleted Successfully
-                            </h2>
-                            <p className="text-sm text-gray-400">
-                                <span className="font-medium text-gray-200">{deletedMemberName}</span>'s account has been permanently deleted.
-                            </p>
-                        </div>
-                        <div className="mt-5 flex items-center justify-center gap-3">
-                            <button
-                                type="button"
-                                onClick={handleDeleteSuccessClose}
-                                className="cursor-pointer px-4 py-2 rounded-lg bg-emerald-600 text-sm font-medium text-white hover:bg-emerald-500"
-                            >
-                                Got it
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </>
     );
 }
