@@ -289,7 +289,7 @@ export default function Reports() {
                     <div className="text-lg font-bold text-blue-300">{formatCurrency(props.salesMonthly.monthlyEarnings)}</div>
                   </div>
                   <div className="rounded-lg border border-slate-700 bg-slate-900/60 p-4">
-                    <div className="text-xs text-gray-400 mb-1">Transactions</div>
+                    <div className="text-xs text-gray-400 mb-1">Number of Transactions</div>
                     <div className="text-lg font-bold text-purple-300">{props.salesMonthly.transactionCount}</div>
                   </div>
                 </div>
@@ -887,7 +887,7 @@ export default function Reports() {
                       <td className="border border-gray-300 px-2 py-1">{formatCurrency(props.salesMonthly.monthlyEarnings)}</td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-medium text-black">Transactions</td>
+                      <td className="border border-gray-300 px-2 py-1 font-medium text-black">Number of Transactions</td>
                       <td className="border border-gray-300 px-2 py-1">{props.salesMonthly.transactionCount}</td>
                     </tr>
                   </tbody>

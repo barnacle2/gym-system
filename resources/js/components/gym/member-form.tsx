@@ -244,11 +244,7 @@ export default function MemberForm({ formData, setFormData, isEditing, resetForm
             <div className="flex gap-2 flex-wrap">
               <button type="submit" className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold">Save Member</button>
               <button type="button" onClick={(e) => { handleSubmit(e as any); resetForm(); }} className="cursor-pointer px-4 py-2 bg-slate-950 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700">Save & New</button>
-              {isEditing && (
-                <button type="button" onClick={() => toggleMemberStatus(formData.id)} className="cursor-pointer px-4 py-2 bg-amber-600 text-black rounded-lg hover:bg-amber-700 font-semibold">
-                  {members.find(m => m.id === formData.id)?.inactive ? 'Activate' : 'Deactivate'}
-                </button>
-              )}
+
             </div>
             <div className="text-xs text-gray-500 mt-3">End Date auto-calculates from Plan if left empty. Status updates in real time.</div>
           </div>
